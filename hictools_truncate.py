@@ -7,8 +7,8 @@
 
 import os, argparse, sys, logging, gzip, contextlib, binascii, re, select, time
 
-from gzip_opener import *
-from exception_logger import *
+from common_tools.gzip_opener import *
+from common_tools.exception_logger import *
 
 def description():
     

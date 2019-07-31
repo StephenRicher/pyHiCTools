@@ -5,8 +5,9 @@
 
 import sys, argparse, logging, select, re, time
 
-from exception_logger import *
-from gzip_opener import *
+from common_tools.exception_logger import *
+from common_tools.gzip_opener import *
+
 import  hictools_digest, hictools_truncate, \
         hictools_filter, hictools_extract, \
         hictools_process

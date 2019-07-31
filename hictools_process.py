@@ -6,10 +6,11 @@
 
 import argparse, collections, bisect, time, re, sys, math, logging
 
-from sam_class import *
+from common_tools.sam_class import *
+from common_tools.sam_opener import *
+from common_tools.gzip_opener import *
+
 from hic_filter_functions import *
-from sam_opener import *
-from gzip_opener import *
 
 def description():
     

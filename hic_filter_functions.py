@@ -2,7 +2,7 @@
 
 import math, sys, bisect, logging
 
-from class_validators import *
+from common_tools.class_validators import *
 
 log = logging.getLogger(__name__)
 
