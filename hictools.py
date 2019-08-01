@@ -220,7 +220,7 @@ def main():
 
     args_dict = vars(args)
     [args_dict.pop(key) for key in ['command', 'function', 'verbose', 'log']]
-    func(**vars(args))
+    return func(**vars(args))
 
 def restriction_seq(value):
         
@@ -245,7 +245,7 @@ def positive_int(value):
 
 if __name__ == '__main__':
     try:
-        main()
+        sys.exit(main())
     finally:
         logging.shutdown()
 
