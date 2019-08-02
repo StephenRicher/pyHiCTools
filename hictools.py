@@ -9,8 +9,8 @@ from common_tools.exception_logger import *
 from common_tools.gzip_opener import *
 
 import  hictools_digest, hictools_truncate, \
-        hictools_filter, hictools_extract, \
-        hictools_process
+        hictools_map, hictools_filter, \
+        hictools_extract, hictools_process
 
 def main():
 
@@ -122,6 +122,42 @@ def main():
     truncate_parser.set_defaults(function = hictools_truncate.truncate)
     commands[truncate_command] = truncate_parser
     
+     # Map sub-parser
+    map_command = 'map'
+    map_parser = subparsers.add_parser('map',
+        description = hictools_map.description(),
+        help = 'Map R1 and R2 of HiC paired-end reads.',
+        parents = [base_parser],
+        formatter_class = formatter_class,
+        epilog = epilog)
+    map_parser.add_argument(
+        'infiles', nargs = 2,
+        help = 'Input R1 and R2 FASTQ files.')
+    map_parser.add_argument(
+        '-n', '--sample', default = 'sample',
+        help = 'Sample name prefix for output files.')
+    map_parser.add_argument(
+        '--bowtie2', default = 'bowtie2',
+        help = 'Set path to bowtie2 installation.')
+    map_parser.add_argument(
+        '--samtools', default = 'samtools',
+        help = 'Set path to samtools installation.')
+    map_parser.add_argument(
+        '-@', '--threads', default = 1,
+        type = int,
+        help = 'Number of threads for alignment.')
+    map_parser.add_argument(
+        '-S', '--sam', dest = 'sam_out',
+        action = 'store_true',
+        help = 'Output alignments in SAM format.')
+    requiredNamed_map = map_parser.add_argument_group(
+        'required named arguments')
+    requiredNamed_map.add_argument(
+        '-x', '--index', required = True,
+        help = 'Bowtie2 index of reference sequence.')
+    map_parser.set_defaults(function = hictools_map.map)
+    commands[map_command] = map_parser
+    
     # Process sub-parser
     process_command = 'process'
     process_parser = subparsers.add_parser(process_command,
@@ -211,12 +247,14 @@ def main():
         level = log_level))
     sys.excepthook = handle_exception
     
-    data_in_stdin = select.select([sys.stdin,],[],[],0.0)[0]
-    if not data_in_stdin and args.infile == '-':
-        log.error(f'No input provided.\n')
-        # Print command specific sub-parser help.
-        commands[args.command].print_help()
-        sys.exit(1)
+    # Check if stdin for those commands than accept stdin
+    if args.command not in ['map']:
+        data_in_stdin = select.select([sys.stdin,],[],[],0.0)[0]
+        if not data_in_stdin and args.infile == '-':
+            log.error(f'No input provided.\n')
+            # Print command specific sub-parser help.
+            commands[args.command].print_help()
+            sys.exit(1)
 
     args_dict = vars(args)
     [args_dict.pop(key) for key in ['command', 'function', 'verbose', 'log']]
