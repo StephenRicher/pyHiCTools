@@ -10,7 +10,8 @@ from common_tools.gzip_opener import *
 
 import  hictools_digest, hictools_truncate, \
         hictools_map, hictools_filter, \
-        hictools_extract, hictools_process
+        hictools_extract, hictools_process, \
+        hictools_deduplicate
 
 def main():
 
@@ -19,48 +20,86 @@ def main():
     formatter_class = argparse.ArgumentDefaultsHelpFormatter
 
     parser = argparse.ArgumentParser(
+        prog = 'hictools',
         description = __doc__,
         formatter_class = formatter_class,
         epilog = epilog)
         
-    # Set parent parser for options common to all sub commands
+    # Parent parser for options common to all sub commands.
     base_parser = argparse.ArgumentParser(
         formatter_class = formatter_class,
         add_help = False)
     base_parser.add_argument(
-        '-o', '--output', nargs = '?', default = '-', 
-        help = 'Output file.')
-    base_parser.add_argument(
-        '-l', '--log', nargs = '?',
-        help = 'Log output file.')
-    base_parser.add_argument(
         '-v', '--verbose', 
         action = 'store_true',
         help = 'Verbose logging for debugging.')
-    
-    # Set parent parser for options only non-SAM processing
-    txt_parser = argparse.ArgumentParser(
+    base_parser.add_argument(
+        '-l', '--log', nargs = '?',
+        help = 'Log output file.')
+        
+    # Parent parser options for commands with multi-threading.
+    parallel_parser = argparse.ArgumentParser(
         formatter_class = formatter_class,
         add_help = False)   
-    txt_parser.add_argument(
+    parallel_parser.add_argument(
+        '-@', '--threads', default = 1,
+        type = positive_int,
+        help = 'Threads for parallel processing.')
+
+    # Parent parser for gzipping output.
+    gzip_parser = argparse.ArgumentParser(
+        formatter_class = formatter_class,
+        add_help = False)
+    gzip_parser.add_argument(
         '-z', '--gzip', 
         action = 'store_true', dest = 'write_gzip',
         help = 'Compress output using gzip')
-    txt_parser.add_argument(
+    
+    # Parent parser for gun-zipping input.
+    gunzip_parser = argparse.ArgumentParser(
+        formatter_class = formatter_class,
+        add_help = False)
+    gunzip_parser.add_argument(
         '-u', '--gunzip', 
         action = 'store_true', dest = 'read_gzip',
         help = 'Read gzip compressed input.')
-        
-    # Set common parent parser options for SAM processing
+    
+    # Parent parser options for SAM processing.
     sam_parser = argparse.ArgumentParser(
         formatter_class = formatter_class,
-        add_help = False)   
-    sam_parser.add_argument(
-        'infile', nargs = '?', default = '-',
-        help = 'Input file in SAM/BAM format.')
+        add_help = False)
     sam_parser.add_argument(
         '--samtools', default = 'samtools',
         help = 'Set path to samtools installation.')
+    
+    # Parent parser options for SAM input.
+    sam_input_parser = argparse.ArgumentParser(
+        formatter_class = formatter_class,
+        add_help = False)   
+    sam_input_parser.add_argument(
+        'infile', nargs = '?', default = '-',
+        help = 'Input file in SAM/BAM format.')
+        
+    # Parent parser options for SAM output.
+    sam_output_parser = argparse.ArgumentParser(
+        formatter_class = formatter_class,
+        add_help = False)
+    sam_output_parser.add_argument(
+        '-S', '--sam', dest = 'sam_out',
+        action = 'store_true',
+        help = 'Output alignments in SAM format.')
+
+    # Parent parser options for bowtie2 processing.
+    bowtie2_parser = argparse.ArgumentParser(
+        formatter_class = formatter_class,
+        add_help = False)   
+    bowtie2_parser.add_argument(
+        '--bowtie2_log', 
+        default = f'bowtie2_{time.strftime("%Y%m%d-%H%M%S")}.log',
+        help = 'Bowtie2 log file name prefix.')
+    bowtie2_parser.add_argument(
+        '--bowtie2', default = 'bowtie2',
+        help = 'Set path to bowtie2 installation.')
 
     # Define subparser
     subparsers = parser.add_subparsers(
@@ -78,12 +117,15 @@ def main():
     digest_parser = subparsers.add_parser(digest_command,
         description = hictools_digest.description(),
         help = 'Generate in silico restriction digest of reference FASTA.', 
-        parents = [base_parser, txt_parser],
+        parents = [base_parser, gzip_parser, gunzip_parser],
         formatter_class = formatter_class,
         epilog = epilog)
     digest_parser.add_argument(
         'infile', nargs = '?', default = '-',
         help = 'Input reference in FASTA format.')
+    digest_parser.add_argument(
+        '-o', '--output', nargs = '?', default = '-', 
+        help = 'Reference sequence digest file.')
     requiredNamed_digest = digest_parser.add_argument_group(
         'required named arguments')
     requiredNamed_digest.add_argument(
@@ -99,12 +141,15 @@ def main():
     truncate_parser = subparsers.add_parser('truncate',
         description = hictools_truncate.description(),
         help = 'Truncate FASTQ sequences at restriction enzyme ligation site.', 
-        parents = [base_parser, txt_parser],
+        parents = [base_parser, gzip_parser, gunzip_parser],
         formatter_class = formatter_class,
         epilog = epilog)
     truncate_parser.add_argument(
         'infile', nargs = '?', default = '-',
         help = 'Input file in FASTQ format.')
+    truncate_parser.add_argument(
+        '-o', '--output', nargs = '?', default = '-', 
+        help = 'Truncated FASTQ file.')
     truncate_parser.add_argument(
         '-s', '--summary', nargs = '?', 
         default = f'truncation_summary_{time.strftime("%Y%m%d-%H%M%S")}.txt', 
@@ -127,29 +172,16 @@ def main():
     map_parser = subparsers.add_parser('map',
         description = hictools_map.description(),
         help = 'Map R1 and R2 of HiC paired-end reads.',
-        parents = [base_parser],
+        parents = [base_parser, parallel_parser, bowtie2_parser, 
+            sam_parser, sam_output_parser],
         formatter_class = formatter_class,
         epilog = epilog)
     map_parser.add_argument(
         'infiles', nargs = 2,
         help = 'Input R1 and R2 FASTQ files.')
     map_parser.add_argument(
-        '-n', '--sample', default = 'sample',
-        help = 'Sample name prefix for output files.')
-    map_parser.add_argument(
-        '--bowtie2', default = 'bowtie2',
-        help = 'Set path to bowtie2 installation.')
-    map_parser.add_argument(
-        '--samtools', default = 'samtools',
-        help = 'Set path to samtools installation.')
-    map_parser.add_argument(
-        '-@', '--threads', default = 1,
-        type = int,
-        help = 'Number of threads for alignment.')
-    map_parser.add_argument(
-        '-S', '--sam', dest = 'sam_out',
-        action = 'store_true',
-        help = 'Output alignments in SAM format.')
+        '-o', '--output', nargs = '?', default = '-', 
+        help = 'R1 and R2 aligned sequences in SAM/BAM format.')
     requiredNamed_map = map_parser.add_argument_group(
         'required named arguments')
     requiredNamed_map.add_argument(
@@ -158,19 +190,38 @@ def main():
     map_parser.set_defaults(function = hictools_map.map)
     commands[map_command] = map_parser
     
+    # Map sub-parser
+    deduplicate_command = 'deduplicate'
+    deduplicate_parser = subparsers.add_parser('deduplicate',
+        description = hictools_deduplicate.description(),
+        help = 'Deduplicate aligned HiC sequences processed by hictools map.',
+        parents = [base_parser, parallel_parser, sam_parser, 
+            sam_input_parser, sam_output_parser],
+        formatter_class = formatter_class,
+        epilog = epilog)
+    deduplicate_parser.add_argument(
+        '-o', '--output', nargs = '?', default = '-', 
+        help = 'Deduplicated sequences in SAM/BAM format.')
+    deduplicate_parser.add_argument(
+        '--deduplication_log', 
+        default = f'deduplicate_{time.strftime("%Y%m%d-%H%M%S")}.log.txt',
+        help = 'Deduplication log file name.')
+    deduplicate_parser.set_defaults(function = hictools_deduplicate.deduplicate)
+    commands[deduplicate_command] = deduplicate_parser
+    
     # Process sub-parser
     process_command = 'process'
     process_parser = subparsers.add_parser(process_command,
         description = hictools_process.description(),
         help = 'Determine HiC fragment mappings from '
                'named-sorted SAM/BAM file.', 
-        parents = [base_parser, sam_parser],
+        parents = [base_parser, sam_parser, 
+            sam_input_parser, sam_output_parser],
         formatter_class = formatter_class,
         epilog = epilog)
     process_parser.add_argument(
-        '-S', '--sam', dest = 'sam_out',
-        action = 'store_true',
-        help = 'Output alignments in SAM format.')
+        '-o', '--output', nargs = '?', default = '-', 
+        help = 'Processed SAM/BAM file.')
     process_parser.add_argument(
         '-u', '--gunzip', 
         action = 'store_true', dest = 'read_gzip',
@@ -189,13 +240,12 @@ def main():
     extract_parser = subparsers.add_parser(extract_command,
         description = hictools_extract.description(),
         help = 'Extract HiC information encoded by hic process from SAM/BAM.', 
-        parents = [base_parser, sam_parser],
+        parents = [base_parser, gzip_parser, sam_parser, sam_input_parser],
         formatter_class = formatter_class,
         epilog = epilog)
     extract_parser.add_argument(
-        '-z', '--gzip', 
-        action = 'store_true', dest = 'write_gzip',
-        help = 'Compress output using gzip')
+        '-o', '--output', nargs = '?', default = '-', 
+        help = 'HiC read pair information in long data format.')
     extract_parser.add_argument(
         '-n', '--sample', default = None,
         help = 'Sample name for input.')
@@ -206,10 +256,14 @@ def main():
     filter_command = 'filter'
     filter_parser = subparsers.add_parser(filter_command,
         description = hictools_filter.description(),
-        help = 'Filter SAM/BAM file processed with hictools process.', 
-        parents = [base_parser, sam_parser],
+        help = 'Filter named-sorted SAM/BAM file processed with hictools process.', 
+        parents = [base_parser, sam_parser, 
+            sam_input_parser, sam_output_parser],
         formatter_class = formatter_class,
         epilog = epilog)
+    filter_parser.add_argument(
+        '-o', '--output', nargs = '?', default = '-', 
+        help = 'Filtered SAM/BAM alignment file.')
     filter_parser.add_argument(
         '--min_inward', default = None, 
         type = positive_int, 
@@ -222,10 +276,6 @@ def main():
         '--max_ditag', default = None, 
         type = positive_int, 
         help = 'Specify maximum ditag size for read pairs.')
-    filter_parser.add_argument(
-        '-S', '--sam', dest = 'sam_out',
-        action = 'store_true',
-        help = 'Output alignments in SAM format.')
     filter_parser.set_defaults(function = hictools_filter.filter)
     commands[filter_command] = filter_parser
                   
@@ -247,7 +297,7 @@ def main():
         level = log_level))
     sys.excepthook = handle_exception
     
-    # Check if stdin for those commands than accept stdin
+    # For relevant sub-commands, check if data in stdin.
     if args.command not in ['map']:
         data_in_stdin = select.select([sys.stdin,],[],[],0.0)[0]
         if not data_in_stdin and args.infile == '-':
