@@ -17,7 +17,7 @@ def description():
         
     return __doc__
 
-def map(infiles, output, sample, index, threads, samtools, bowtie2, sam_out):
+def map(infiles, output, index, threads, samtools, bowtie2, bowtie2_log, sam_out):
     
     ''' Map R1 and R2 of HiC paired-end reads seperately. '''
     
@@ -27,23 +27,24 @@ def map(infiles, output, sample, index, threads, samtools, bowtie2, sam_out):
     out_format = 'S' if sam_out else 'b'
 
     with tempfile.TemporaryFile() as tmp:
-        log.error(tmp)
         try:
             for i, fastq in enumerate(infiles):
         
-                flag = '0x40' if i else '0x80'
-                read = 'R1' if i else 'R2'
+                flag = '0x80' if i else '0x40'
+                read = 'R2' if i else 'R1'
                 
                 cmd1 = [f'{bowtie2}', '-x', f'{index}', '-U', f'{fastq}', 
                     '-p', f'{threads}', '--very-sensitive']
                 cmd2 = ['awk', '-v', 'OFS=\t', 
                     f'!/^ *@/ {{$2 = $2+{flag}}} {{print}}']
-                cmd3 = [f'{samtools}', 'sogrt', '-n', '-O', 'bam', '-m', '1G', 
-                    '-@', f'{threads}', '-o', f'{sample}.{read}.sorted.bam']
+                cmd3 = [f'{samtools}', 'sort', '-n', '-O', 'bam', '-m', '1G', 
+                    '-@', f'{threads}', '-o', f'{read}.sorted.tmp.bam']
         
                 with ExitStack() as stack:
+                    bowtie_log = stack.enter_context(
+                        open(f'{bowtie2_log}.{read}.txt', 'w'))
                     p1 = stack.enter_context(
-                        Popen(cmd1, stdout = PIPE, stderr = tmp))
+                        Popen(cmd1, stdout = PIPE, stderr = bowtie_log))
                     p2 = stack.enter_context(
                         Popen(cmd2, stdin = p1.stdout, 
                             stdout = PIPE, stderr = tmp))
@@ -55,12 +56,13 @@ def map(infiles, output, sample, index, threads, samtools, bowtie2, sam_out):
                     if not all(ec is 0 for ec in exit_codes):
                         log.error('A sub-process returned a non-zero exit code.')
                         
-    
-            cmd4 = [f'{samtools}', 'merge', '-n', '-@', f'{threads}', '-', 
-                f'{sample}.R1.sorted.bam', f'{sample}.R2.sorted.bam']
-            cmd5 = [f'{samtools}', 'fixmate', '-pr', '-@', f'{threads}', '-', '-'] 
+            cmd4 = [f'{samtools}', 'merge', '-n', '-@', f'{threads}', 
+                '-', 'R1.sorted.tmp.bam', 'R2.sorted.tmp.bam']
+            cmd5 = [f'{samtools}', 'fixmate', '-pr', '-@', f'{threads}', 
+                '-', '-'] 
             cmd6 = [f'{samtools}', 'view', '-u', '-F', '8', '-q', '15']
-            cmd7 = [f'{samtools}', 'fixmate', '-pm', '-@', f'{threads}', '-', '-']
+            cmd7 = [f'{samtools}', 'fixmate', '-pm', '-@', f'{threads}', 
+                '-', '-']
             cmd8 = [f'{samtools}', 'view', f'-{out_format}h', '-f', '1', 
                 '-o', f'{output}']
 
@@ -88,8 +90,8 @@ def map(infiles, output, sample, index, threads, samtools, bowtie2, sam_out):
             for line in tmp:
                 log.error(line.decode().rstrip())
     
-    os.remove(f'{sample}.R1.sorted.bam')
-    os.remove(f'{sample}.R2.sorted.bam')
+    os.remove('R1.sorted.tmp.bam')
+    os.remove('R2.sorted.tmp.bam')
              
              
              
