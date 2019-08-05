@@ -31,8 +31,6 @@ def deduplicate(infile, output, deduplication_log, threads, samtools, sam_out):
     cmd2 = [f'{samtools}', 'markdup', '-sr', '-@', f'{threads}', '-', '-']
     cmd3 = [f'{samtools}', 'sort', '-n', '-m', '1G', '-@', f'{threads}', 
         '-O', f'{out_format}', '-o', f'{output}', '-'] 
-    
-    
         
     with ExitStack() as stack:
         try:
@@ -44,8 +42,10 @@ def deduplicate(infile, output, deduplication_log, threads, samtools, sam_out):
             p2 = stack.enter_context(
                 Popen(cmd2, stdin = p1.stdout, 
                     stdout = PIPE, stderr = dedup_log))
+            p1.stdout.close()
             p3 = stack.enter_context(
                 Popen(cmd3, stdin = p2.stdout, stderr = tmp))
+            p2.stdout.close()
                     
             exit_codes = [p.wait() for p in [p1, p2, p3]]
             log.debug(f'Exit_codes for p1, p2, p3: {exit_codes}.')
