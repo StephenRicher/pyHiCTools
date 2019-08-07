@@ -29,7 +29,7 @@ def process_restriction(restriction):
     cut_index = len(ligation1)
     return ligation_seq, restriction_seq
 
-def truncate(infile, output, read_gzip, write_gzip, sample, summary, restriction):
+def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
     
     ''' Run main loop. '''
 
@@ -44,8 +44,7 @@ def truncate(infile, output, read_gzip, write_gzip, sample, summary, restriction
         sample = infile
 
     with smart_open(output, 'wt', write_gzip) as out_obj, \
-            smart_open(infile, 'rt', read_gzip) as in_obj, \
-            open(summary, 'a') as summary_obj:
+            smart_open(infile, 'rt', read_gzip) as in_obj:
             
         is_truncated = False
         for index, line in enumerate(in_obj):
@@ -69,5 +68,5 @@ def truncate(infile, output, read_gzip, write_gzip, sample, summary, restriction
             mean_truncated_length = truncated_length/truncated
         except ZeroDivisionError:
             mean_truncated_length = 'na'
-        summary_obj.write(
+        sys.stderr.write(
             f'{sample}\t{truncated}\t{ mean_truncated_length}\n')
