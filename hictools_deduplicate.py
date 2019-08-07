@@ -17,7 +17,7 @@ def description():
         
     return __doc__
 
-def deduplicate(infile, output, sample, threads, samtools, sam_out):
+def deduplicate(infile, output, threads, samtools, sam_out):
 
     
     fun_name = sys._getframe().f_code.co_name
@@ -35,13 +35,11 @@ def deduplicate(infile, output, sample, threads, samtools, sam_out):
     with ExitStack() as stack:
         try:
             tmp = stack.enter_context(tempfile.TemporaryFile())
-            dedup_log = stack.enter_context(
-                open(f'{sample}.deduplication.txt', 'w'))
             p1 = stack.enter_context(
                 Popen(cmd1, stdin = stdin, stdout = PIPE, stderr = tmp))
             p2 = stack.enter_context(
-                Popen(cmd2, stdin = p1.stdout, 
-                    stdout = PIPE, stderr = dedup_log))
+                Popen(cmd2, stdin = p1.stdout, stdout = PIPE, 
+                    stderr = sys.stderr))
             p1.stdout.close()
             p3 = stack.enter_context(
                 Popen(cmd3, stdin = p2.stdout, stderr = tmp))
