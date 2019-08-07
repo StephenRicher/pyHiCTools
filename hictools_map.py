@@ -38,7 +38,7 @@ def map(infiles, output, index, threads, sample,
                     '-p', f'{threads}', '--very-sensitive']
                 cmd2 = ['awk', '-v', 'OFS=\t', 
                     f'!/^ *@/ {{$2 = $2+{flag}}} {{print}}']
-                cmd3 = [f'{samtools}', 'sort', '-n', '-O', 'bam', '-m', '100M', 
+                cmd3 = [f'{samtools}', 'sort', '-n', '-O', 'bam', '-m', '1G', 
                     '-@', f'{threads}', '-o', f'{sample}-{read}.sorted.bam']
         
                 with ExitStack() as stack:
