@@ -207,9 +207,9 @@ def main():
         '-o', '--output', nargs = '?', default = '-', 
         help = 'Deduplicated sequences in SAM/BAM format.')
     deduplicate_parser.add_argument(
-        '--deduplication_log', 
-        default = f'deduplicate_{time.strftime("%Y%m%d-%H%M%S")}.log.txt',
-        help = 'Deduplication log file name.')
+        '-n', '--sample', 
+        default = f'sample_{time.strftime("%Y%m%d-%H%M%S")}',
+        help = 'Sample name to prefix to deduplication log.')
     deduplicate_parser.set_defaults(function = hictools_deduplicate.deduplicate)
     commands[deduplicate_command] = deduplicate_parser
     
