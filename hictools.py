@@ -182,6 +182,10 @@ def main():
     map_parser.add_argument(
         '-o', '--output', nargs = '?', default = '-', 
         help = 'R1 and R2 aligned sequences in SAM/BAM format.')
+    map_parser.add_argument(
+        '-n', '--sample', 
+        default = f'sample_{time.strftime("%Y%m%d-%H%M%S")}',
+        help = 'Sample name to prefix R1 and R2 BAMs.')
     requiredNamed_map = map_parser.add_argument_group(
         'required named arguments')
     requiredNamed_map.add_argument(
