@@ -17,7 +17,7 @@ def description():
         
     return __doc__
 
-def map(infiles, output, index, threads, 
+def map(infiles, output, index, threads, sample,
         samtools, bowtie2, bowtie2_log, sam_out):
     
     ''' Map R1 and R2 of HiC paired-end reads seperately. '''
@@ -38,8 +38,8 @@ def map(infiles, output, index, threads,
                     '-p', f'{threads}', '--very-sensitive']
                 cmd2 = ['awk', '-v', 'OFS=\t', 
                     f'!/^ *@/ {{$2 = $2+{flag}}} {{print}}']
-                cmd3 = [f'{samtools}', 'sort', '-n', '-O', 'bam', '-m', '1G', 
-                    '-@', f'{threads}', '-o', f'{read}.sorted.tmp.bam']
+                cmd3 = [f'{samtools}', 'sort', '-n', '-O', 'bam', '-m', '100M', 
+                    '-@', f'{threads}', '-o', f'{sample}-{read}.sorted.bam']
         
                 with ExitStack() as stack:
                     bowtie_log = stack.enter_context(
@@ -61,7 +61,7 @@ def map(infiles, output, index, threads,
                             'A sub-process returned a non-zero exit code.')
                         
             cmd4 = [f'{samtools}', 'merge', '-n', '-@', f'{threads}', 
-                '-', 'R1.sorted.tmp.bam', 'R2.sorted.tmp.bam']
+                '-', f'{sample}-R1.sorted.bam', f'{sample}-R2.sorted.bam']
             cmd5 = [f'{samtools}', 'fixmate', '-pr', '-@', f'{threads}', 
                 '-', '-'] 
             cmd6 = [f'{samtools}', 'view', '-u', '-F', '8', '-q', '15']
@@ -97,10 +97,4 @@ def map(infiles, output, index, threads,
             tmp.seek(0)
             for line in tmp:
                 log.error(line.decode().rstrip())
-    
-    os.remove('R1.sorted.tmp.bam')
-    os.remove('R2.sorted.tmp.bam')
-             
-             
-             
-             
+
