@@ -94,10 +94,6 @@ def main():
         formatter_class = formatter_class,
         add_help = False)   
     bowtie2_parser.add_argument(
-        '--bowtie2_log', 
-        default = f'bowtie2_{time.strftime("%Y%m%d-%H%M%S")}.log',
-        help = 'Bowtie2 log file name prefix.')
-    bowtie2_parser.add_argument(
         '--bowtie2', default = 'bowtie2',
         help = 'Set path to bowtie2 installation.')
 
@@ -151,12 +147,8 @@ def main():
         '-o', '--output', nargs = '?', default = '-', 
         help = 'Truncated FASTQ file.')
     truncate_parser.add_argument(
-        '-s', '--summary', nargs = '?', 
-        default = f'truncation_summary_{time.strftime("%Y%m%d-%H%M%S")}.txt', 
-        help = 'Truncation summary file name.')
-    truncate_parser.add_argument(
         '-n', '--sample', default = None,
-        help = 'Sample name for truncation summary file.')
+        help = 'Sample name in case infile name cannot be detected.')
     requiredNamed_truncate = truncate_parser.add_argument_group(
         'required named arguments')
     requiredNamed_truncate.add_argument(
@@ -206,10 +198,6 @@ def main():
     deduplicate_parser.add_argument(
         '-o', '--output', nargs = '?', default = '-', 
         help = 'Deduplicated sequences in SAM/BAM format.')
-    deduplicate_parser.add_argument(
-        '-n', '--sample', 
-        default = f'sample_{time.strftime("%Y%m%d-%H%M%S")}',
-        help = 'Sample name to prefix to deduplication log.')
     deduplicate_parser.set_defaults(function = hictools_deduplicate.deduplicate)
     commands[deduplicate_command] = deduplicate_parser
     
