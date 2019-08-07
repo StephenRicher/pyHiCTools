@@ -18,7 +18,7 @@ def description():
     return __doc__
 
 def map(infiles, output, index, threads, sample,
-        samtools, bowtie2, bowtie2_log, sam_out):
+        samtools, bowtie2, sam_out):
     
     ''' Map R1 and R2 of HiC paired-end reads seperately. '''
     
@@ -42,10 +42,9 @@ def map(infiles, output, index, threads, sample,
                     '-@', f'{threads}', '-o', f'{sample}-{read}.sorted.bam']
         
                 with ExitStack() as stack:
-                    bowtie_log = stack.enter_context(
-                        open(f'{bowtie2_log}.{read}.txt', 'w'))
+                    sys.stderr.write(f'Mapping {read} of {fastq}.')
                     p1 = stack.enter_context(
-                        Popen(cmd1, stdout = PIPE, stderr = bowtie_log))
+                        Popen(cmd1, stdout = PIPE, stderr = sys.stderr))
                     p2 = stack.enter_context(
                         Popen(cmd2, stdin = p1.stdout, 
                             stdout = PIPE, stderr = tmp))
