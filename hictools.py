@@ -168,6 +168,9 @@ def main():
         '-o', '--output', nargs = '?', default = '-', 
         help = 'R1 and R2 aligned sequences in SAM/BAM format.')
     map_parser.add_argument(
+        '-i', '--intermediate', default = None,
+        help = 'Path to write intermediate BAM prior to filtering.')
+    map_parser.add_argument(
         '-n', '--sample', 
         default = f'sample_{time.strftime("%Y%m%d-%H%M%S")}',
         help = 'Sample name to prefix R1 and R2 BAMs.')
