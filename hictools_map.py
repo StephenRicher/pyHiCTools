@@ -18,7 +18,7 @@ def description():
     return __doc__
 
 def map(infiles, output, index, threads, sample,
-        samtools, bowtie2, sam_out):
+        intermediate, samtools, bowtie2, sam_out):
     
     ''' Map R1 and R2 of HiC paired-end reads seperately. '''
     
@@ -26,6 +26,13 @@ def map(infiles, output, index, threads, sample,
     log = logging.getLogger(f'{__name__}.{fun_name}')
     
     out_format = 'S' if sam_out else 'b'
+
+
+    if not intermediate:
+        remove_intermediate = True
+        intermediate = f'{sample}.fixmate.tmp.bam'
+    else:
+        remove_intermediate = False
 
     with tempfile.TemporaryFile() as tmp:
         try:
@@ -63,8 +70,8 @@ def map(infiles, output, index, threads, sample,
                         
             cmd4 = [f'{samtools}', 'merge', '-n', '-@', f'{threads}', '-', 
                 f'{sample}-R1.sorted.tmp.bam', f'{sample}-R2.sorted.tmp.bam']
-            cmd5 = [f'{samtools}', 'fixmate', '-p', '-@', f'{threads}', '-', 
-                f'{sample}.fixmate.bam'] 
+            cmd5 = [f'{samtools}', 'fixmate', '-pm', '-@', f'{threads}', '-', 
+                f'{intermediate}'] 
 
             with ExitStack() as stack:
                 p4 = stack.enter_context(
@@ -81,10 +88,12 @@ def map(infiles, output, index, threads, sample,
              
             os.remove(f'{sample}-R1.sorted.tmp.bam')
             os.remove(f'{sample}-R2.sorted.tmp.bam')       
-            
+            if remove_intermediate:
+                os.remove(intermediate)
+    
             cmd6 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15',
-                f'{sample}.fixmate.bam']
-            cmd7 = [f'{samtools}', 'fixmate', '-pmr', '-@', f'{threads}', 
+                f'{intermediate}']
+            cmd7 = [f'{samtools}', 'fixmate', '-pr', '-@', f'{threads}', 
                 '-', '-']
             cmd8 = [f'{samtools}', 'view', f'-{out_format}h', '-f', '1', 
                 '-o', f'{output}']
