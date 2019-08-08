@@ -38,8 +38,7 @@ def deduplicate(infile, output, threads, samtools, sam_out):
             p1 = stack.enter_context(
                 Popen(cmd1, stdin = stdin, stdout = PIPE, stderr = tmp))
             p2 = stack.enter_context(
-                Popen(cmd2, stdin = p1.stdout, stdout = PIPE, 
-                    stderr = sys.stderr))
+                Popen(cmd2, stdin = p1.stdout, stdout = PIPE))
             p1.stdout.close()
             p3 = stack.enter_context(
                 Popen(cmd3, stdin = p2.stdout, stderr = tmp))
