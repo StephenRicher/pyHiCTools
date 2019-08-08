@@ -40,9 +40,10 @@ def map(infiles, output, index, threads, sample,
                     f'!/^ *@/ {{$2 = $2+{flag}}} {{print}}']
                 cmd3 = [f'{samtools}', 'sort', '-n', '-O', 'bam', '-m', '1G', 
                     '-@', f'{threads}', '-o', f'{sample}-{read}.sorted.bam']
-        
+                
+                sys.stderr.write(f'Mapping {read} of {fastq}.')
                 with ExitStack() as stack:
-                    sys.stderr.write(f'Mapping {read} of {fastq}.')
+                    
                     p1 = stack.enter_context(
                         Popen(cmd1, stdout = PIPE, stderr = sys.stderr))
                     p2 = stack.enter_context(
