@@ -105,12 +105,8 @@ def main():
         metavar = 'Commands',
         help = 'Description:')
     
-    # Dictionary to store each command name and command sub-parser
-    commands = {}
-    
     # Digest sub-parser
-    digest_command = 'digest'
-    digest_parser = subparsers.add_parser(digest_command,
+    digest_parser = subparsers.add_parser('digest',
         description = hictools_digest.description(),
         help = 'Generate in silico restriction digest of reference FASTA.', 
         parents = [base_parser, gzip_parser, gunzip_parser],
@@ -130,10 +126,8 @@ def main():
         help = '''Restriction cut sequence with "^" to indicate cut site.
                   e.g. Mbol = ^GATC''')
     digest_parser.set_defaults(function = hictools_digest.digest)
-    commands[digest_command] = digest_parser
     
     # Truncate sub-parser
-    truncate_command = 'truncate'
     truncate_parser = subparsers.add_parser('truncate',
         description = hictools_truncate.description(),
         help = 'Truncate FASTQ sequences at restriction enzyme ligation site.', 
@@ -157,7 +151,6 @@ def main():
         help = '''Restriction cut sequence with "^" to indicate cut site.
                   e.g. Mbol = ^GATC''')
     truncate_parser.set_defaults(function = hictools_truncate.truncate)
-    commands[truncate_command] = truncate_parser
     
      # Map sub-parser
     map_command = 'map'
@@ -184,10 +177,8 @@ def main():
         '-x', '--index', required = True,
         help = 'Bowtie2 index of reference sequence.')
     map_parser.set_defaults(function = hictools_map.map)
-    commands[map_command] = map_parser
     
     # Map sub-parser
-    deduplicate_command = 'deduplicate'
     deduplicate_parser = subparsers.add_parser('deduplicate',
         description = hictools_deduplicate.description(),
         help = 'Deduplicate aligned HiC sequences processed by hictools map.',
@@ -199,11 +190,9 @@ def main():
         '-o', '--output', nargs = '?', default = '-', 
         help = 'Deduplicated sequences in SAM/BAM format.')
     deduplicate_parser.set_defaults(function = hictools_deduplicate.deduplicate)
-    commands[deduplicate_command] = deduplicate_parser
     
     # Process sub-parser
-    process_command = 'process'
-    process_parser = subparsers.add_parser(process_command,
+    process_parser = subparsers.add_parser('process',
         description = hictools_process.description(),
         help = 'Determine HiC fragment mappings from '
                'named-sorted SAM/BAM file.', 
@@ -225,11 +214,9 @@ def main():
         help = 'Output of hictools digest using same '
                'reference genome as used to map reads.')
     process_parser.set_defaults(function = hictools_process.process)
-    commands[process_command] = process_parser
                   
     # Extract sub-parser
-    extract_command = 'extract'
-    extract_parser = subparsers.add_parser(extract_command,
+    extract_parser = subparsers.add_parser('extract',
         description = hictools_extract.description(),
         help = 'Extract HiC information encoded by hic process from SAM/BAM.', 
         parents = [base_parser, gzip_parser, sam_parser, sam_input_parser],
@@ -242,11 +229,9 @@ def main():
         '-n', '--sample', default = None,
         help = 'Sample name for input.')
     extract_parser.set_defaults(function = hictools_extract.extract)
-    commands[extract_command] = extract_parser
     
     # Filter sub-parser
-    filter_command = 'filter'
-    filter_parser = subparsers.add_parser(filter_command,
+    filter_parser = subparsers.add_parser('filter',
         description = hictools_filter.description(),
         help = 'Filter named-sorted SAM/BAM file processed with hictools process.', 
         parents = [base_parser, sam_parser, 
@@ -269,7 +254,6 @@ def main():
         type = positive_int, 
         help = 'Specify maximum ditag size for read pairs.')
     filter_parser.set_defaults(function = hictools_filter.filter)
-    commands[filter_command] = filter_parser
                   
     args = parser.parse_args()
 
@@ -288,15 +272,6 @@ def main():
         format = log_format, 
         level = log_level))
     sys.excepthook = handle_exception
-    
-    # For relevant sub-commands, check if data in stdin.
-    if args.command not in ['map']:
-        data_in_stdin = select.select([sys.stdin,],[],[],0.0)[0]
-        if not data_in_stdin and args.infile == '-':
-            log.error(f'No input provided.\n')
-            # Print command specific sub-parser help.
-            commands[args.command].print_help()
-            sys.exit(1)
 
     args_dict = vars(args)
     [args_dict.pop(key) for key in ['command', 'function', 'verbose', 'log']]
