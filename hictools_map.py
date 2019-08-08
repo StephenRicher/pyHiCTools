@@ -39,13 +39,14 @@ def map(infiles, output, index, threads, sample,
                 cmd2 = ['awk', '-v', 'OFS=\t', 
                     f'!/^ *@/ {{$2 = $2+{flag}}} {{print}}']
                 cmd3 = [f'{samtools}', 'sort', '-n', '-O', 'bam', '-m', '1G', 
-                    '-@', f'{threads}', '-o', f'{sample}-{read}.sorted.bam']
+                    '-@', f'{threads}', '-o', f'{sample}-{read}.sorted.tmp.bam']
                 
-                sys.stderr.write(f'Mapping {read} of {fastq}.')
+                sys.stderr.write(f'Mapping {fastq}.\n')
+                sys.stderr.flush()
                 with ExitStack() as stack:
                     
                     p1 = stack.enter_context(
-                        Popen(cmd1, stdout = PIPE, stderr = sys.stderr))
+                        Popen(cmd1, stdout = PIPE))
                     p2 = stack.enter_context(
                         Popen(cmd2, stdin = p1.stdout, 
                             stdout = PIPE, stderr = tmp))
@@ -60,35 +61,47 @@ def map(infiles, output, index, threads, sample,
                         log.error(
                             'A sub-process returned a non-zero exit code.')
                         
-            cmd4 = [f'{samtools}', 'merge', '-n', '-@', f'{threads}', 
-                '-', f'{sample}-R1.sorted.bam', f'{sample}-R2.sorted.bam']
-            cmd5 = [f'{samtools}', 'fixmate', '-pr', '-@', f'{threads}', 
-                '-', '-'] 
-            cmd6 = [f'{samtools}', 'view', '-u', '-F', '8', '-q', '15']
-            cmd7 = [f'{samtools}', 'fixmate', '-pm', '-@', f'{threads}', 
-                '-', '-']
-            cmd8 = [f'{samtools}', 'view', f'-{out_format}h', '-f', '1', 
-                '-o', f'{output}']
+            cmd4 = [f'{samtools}', 'merge', '-n', '-@', f'{threads}', '-', 
+                f'{sample}-R1.sorted.tmp.bam', f'{sample}-R2.sorted.tmp.bam']
+            cmd5 = [f'{samtools}', 'fixmate', '-p', '-@', f'{threads}', '-', 
+                f'{sample}.fixmate.bam'] 
 
             with ExitStack() as stack:
                 p4 = stack.enter_context(
                     Popen(cmd4, stdout = PIPE, stderr = tmp))
                 p5 = stack.enter_context(
-                    Popen(cmd5, stdin = p4.stdout, stdout = PIPE, stderr = tmp))
+                    Popen(cmd5, stdin = p4.stdout, stderr = tmp))
                 p4.stdout.close()
+ 
+                exit_codes = [p.wait() for p in [p4, p5]]
+                
+                log.debug(f'Exit_codes for p4, p5: {exit_codes}.')
+                if not all(ec is 0 for ec in exit_codes):
+                    log.error('A sub-process returned a non-zero exit code.')
+             
+            os.remove(f'{sample}-R1.sorted.tmp.bam')
+            os.remove(f'{sample}-R2.sorted.tmp.bam')       
+            
+            cmd6 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15',
+                f'{sample}.fixmate.bam']
+            cmd7 = [f'{samtools}', 'fixmate', '-pmr', '-@', f'{threads}', 
+                '-', '-']
+            cmd8 = [f'{samtools}', 'view', f'-{out_format}h', '-f', '1', 
+                '-o', f'{output}']
+            
+            with ExitStack() as stack:
                 p6 = stack.enter_context(
-                    Popen(cmd6, stdin = p5.stdout, stdout = PIPE, stderr = tmp))
-                p5.stdout.close()
+                    Popen(cmd6, stdout = PIPE, stderr = tmp))
                 p7 = stack.enter_context(
                     Popen(cmd7, stdin = p6.stdout, stdout = PIPE, stderr = tmp))
                 p6.stdout.close()
                 p8 = stack.enter_context(
                     Popen(cmd8, stdin = p7.stdout, stderr = tmp))
                 p7.stdout.close()
-
-                exit_codes = [p.wait() for p in [p4, p5, p6, p7]]
                 
-                log.debug(f'Exit_codes for p4, p5, p6, p7: {exit_codes}.')
+                exit_codes = [p.wait() for p in [p6, p7, p8]]
+                
+                log.debug(f'Exit_codes for p6, p7, p8: {exit_codes}.')
                 if not all(ec is 0 for ec in exit_codes):
                     log.error('A sub-process returned a non-zero exit code.')
 
