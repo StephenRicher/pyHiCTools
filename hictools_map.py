@@ -70,8 +70,8 @@ def map(infiles, output, index, threads, sample,
                         
             cmd4 = [f'{samtools}', 'merge', '-n', '-@', f'{threads}', '-', 
                 f'{sample}-R1.sorted.tmp.bam', f'{sample}-R2.sorted.tmp.bam']
-            cmd5 = [f'{samtools}', 'fixmate', '-pr', '-@', f'{threads}', '-', 
-                f'{intermediate}'] 
+            cmd5 = [f'{samtools}', 'fixmate', '-pr', 
+                '-@', f'{threads}', '-', f'{intermediate}'] 
 
             with ExitStack() as stack:
                 p4 = stack.enter_context(
@@ -91,12 +91,12 @@ def map(infiles, output, index, threads, sample,
             if remove_intermediate:
                 os.remove(intermediate)
     
-            cmd6 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15',
-                f'{intermediate}']
-            cmd7 = [f'{samtools}', 'fixmate', '-pm', '-@', f'{threads}', 
-                '-', '-']
+            cmd6 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15', 
+                '-@', f'{threads}', f'{intermediate}']
+            cmd7 = [f'{samtools}', 'fixmate', '-pm', 
+                '-@', f'{threads}', '-', '-']
             cmd8 = [f'{samtools}', 'view', f'-{out_format}h', '-f', '1', 
-                '-o', f'{output}']
+                '-@', f'{threads}', '-o', f'{output}']
             
             with ExitStack() as stack:
                 p6 = stack.enter_context(
