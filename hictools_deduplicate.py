@@ -49,14 +49,11 @@ def deduplicate(infile, output, threads, samtools, sam_out):
                 Popen(cmd3, stdin = p2.stdout, stderr = tmp))
             p2.stdout.close()
             p4 = stack.enter_context(
-                Popen(cmd3, stdin = p3.stdout, stdout = PIPE))
+                Popen(cmd4, stdin = p3.stdout, stdout = PIPE, stderr = tmp))
             p3.stdout.close()
             p5 = stack.enter_context(
-                Popen(cmd4, stdin = p4.stdout, stderr = tmp))
+                Popen(cmd5, stdin = p4.stdout, stderr = tmp))
             p4.stdout.close()
-            p6 = stack.enter_context(
-                Popen(cmd5, stdin = p5.stdout, stderr = tmp))
-            p5.stdout.close()
             
             exit_codes = [p.wait() for p in [p1, p2, p3]]
             log.debug(f'Exit_codes for p1, p2, p3: {exit_codes}.')
