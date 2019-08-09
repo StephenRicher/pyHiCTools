@@ -42,7 +42,7 @@ def map(infiles, output, index, threads, sample,
                 read = 'R2' if i else 'R1'
                 
                 cmd1 = [f'{bowtie2}', '-x', f'{index}', '-U', f'{fastq}', 
-                    '-p', f'{threads}', '--very-sensitive']
+                    '-p', f'{threads}', '--very-fast']
                 cmd2 = ['awk', '-v', 'OFS=\t', 
                     f'!/^ *@/ {{$2 = $2+{flag}}} {{print}}']
                 cmd3 = [f'{samtools}', 'sort', '-n', '-O', 'bam', '-m', '1G', 
