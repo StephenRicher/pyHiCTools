@@ -70,7 +70,7 @@ def map(infiles, output, index, threads, sample,
                         
             cmd4 = [f'{samtools}', 'merge', '-n', '-@', f'{threads}', '-', 
                 f'{sample}-R1.sorted.tmp.bam', f'{sample}-R2.sorted.tmp.bam']
-            cmd5 = [f'{samtools}', 'fixmate', '-pm', '-@', f'{threads}', '-', 
+            cmd5 = [f'{samtools}', 'fixmate', '-pr', '-@', f'{threads}', '-', 
                 f'{intermediate}'] 
 
             with ExitStack() as stack:
@@ -93,7 +93,7 @@ def map(infiles, output, index, threads, sample,
     
             cmd6 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15',
                 f'{intermediate}']
-            cmd7 = [f'{samtools}', 'fixmate', '-pr', '-@', f'{threads}', 
+            cmd7 = [f'{samtools}', 'fixmate', '-pm', '-@', f'{threads}', 
                 '-', '-']
             cmd8 = [f'{samtools}', 'view', f'-{out_format}h', '-f', '1', 
                 '-o', f'{output}']
