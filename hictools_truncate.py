@@ -19,6 +19,8 @@ def description():
     return __doc__
 
 def process_restriction(restriction):
+    assert(isinstance(restriction, str))
+    assert(restriction.count('^') == 1)
     restriction = restriction.upper()
     restriction_seq = restriction.replace('^','')
     cut_site1 = restriction.index('^')
