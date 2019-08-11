@@ -23,7 +23,7 @@ def deduplicate(infile, output, threads, samtools, sam_out):
     fun_name = sys._getframe().f_code.co_name
     log = logging.getLogger(f'{__name__}.{fun_name}')
     
-    out_format = 'SAM' if sam_out else 'BAM'
+    out_format = 'S' if sam_out else 'b'
     stdin = sys.stdin if infile == '-' else None
 
     cmd1 = [f'{samtools}', 'sort', '-l', '0', '-m', '1G', 
@@ -31,7 +31,7 @@ def deduplicate(infile, output, threads, samtools, sam_out):
     cmd2 = [f'{samtools}', 'markdup', '-sr', 
         '-@', f'{threads}', '-', '-']
     cmd3 = [f'{samtools}', 'sort', '-l', '0', '-n', '-m', '1G', 
-        '-@', f'{threads}', '-', '-']
+        '-@', f'{threads}', '-']
     cmd4 = [f'{samtools}', 'fixmate', '-p', 
         '-@', f'{threads}', '-', '-']
     cmd5 = [f'{samtools}', 'view', f'-{out_format}h', '-f', '1', 
