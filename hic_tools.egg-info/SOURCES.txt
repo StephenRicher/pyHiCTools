@@ -1,0 +1,15 @@
+setup.py
+hic_tools.egg-info/PKG-INFO
+hic_tools.egg-info/SOURCES.txt
+hic_tools.egg-info/dependency_links.txt
+hic_tools.egg-info/top_level.txt
+hictools/__init__.py
+hictools/hic_filter_functions.py
+hictools/hictools.py
+hictools/hictools_deduplicate.py
+hictools/hictools_digest.py
+hictools/hictools_extract.py
+hictools/hictools_filter.py
+hictools/hictools_map.py
+hictools/hictools_process.py
+hictools/hictools_truncate.py
