@@ -25,7 +25,7 @@ def map(infiles, output, index, threads, sample,
     fun_name = sys._getframe().f_code.co_name
     log = logging.getLogger(f'{__name__}.{fun_name}')
     
-    out_format = 'S' if sam_out else 'b'
+    out_format = 'SAM' if sam_out else 'BAM'
 
 
     if not intermediate:
@@ -45,8 +45,8 @@ def map(infiles, output, index, threads, sample,
                     '-p', f'{threads}', '--very-fast']
                 cmd2 = ['awk', '-v', 'OFS=\t', 
                     f'!/^ *@/ {{$2 = $2+{flag}}} {{print}}']
-                cmd3 = [f'{samtools}', 'sort', '-n', '-O', 'bam', '-m', '1G', 
-                    '-@', f'{threads}', '-o', f'{sample}-{read}.sorted.tmp.bam']
+                cmd3 = [f'{samtools}', 'sort', '-n', '-O', 'SAM', '-m', '1G', 
+                    '-@', f'{threads}', '-o', f'{sample}-{read}.sorted.tmp.sam']
                 
                 sys.stderr.write(f'Mapping {fastq}.\n')
                 sys.stderr.flush()
@@ -68,9 +68,9 @@ def map(infiles, output, index, threads, sample,
                         log.error(
                             'A sub-process returned a non-zero exit code.')
                         
-            cmd4 = [f'{samtools}', 'merge', '-n', '-@', f'{threads}', '-', 
-                f'{sample}-R1.sorted.tmp.bam', f'{sample}-R2.sorted.tmp.bam']
-            cmd5 = [f'{samtools}', 'fixmate', '-pr', 
+            cmd4 = [f'{samtools}', 'merge', '-un', '-@', f'{threads}', '-', 
+                f'{sample}-R1.sorted.tmp.sam', f'{sample}-R2.sorted.tmp.sam']
+            cmd5 = [f'{samtools}', 'fixmate', '-pr', '-O', f'{out_format}',
                 '-@', f'{threads}', '-', f'{intermediate}'] 
 
             with ExitStack() as stack:
@@ -86,16 +86,18 @@ def map(infiles, output, index, threads, sample,
                 if not all(ec is 0 for ec in exit_codes):
                     log.error('A sub-process returned a non-zero exit code.')
              
-            os.remove(f'{sample}-R1.sorted.tmp.bam')
-            os.remove(f'{sample}-R2.sorted.tmp.bam')       
+            os.remove(f'{sample}-R1.sorted.tmp.sam')
+            os.remove(f'{sample}-R2.sorted.tmp.sam')       
             if remove_intermediate:
                 os.remove(intermediate)
     
             cmd6 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15', 
                 '-@', f'{threads}', f'{intermediate}']
-            cmd7 = [f'{samtools}', 'fixmate', '-pm', 
+            cmd7 = [f'{samtools}', 'fixmate', '-p', '-O', 'SAM',
                 '-@', f'{threads}', '-', '-']
-            cmd8 = [f'{samtools}', 'view', f'-{out_format}h', '-f', '1', 
+            cmd8 = [f'{samtools}', 'view', '-u', '-f', '1', 
+                '-@', f'{threads}', ]
+            cmd9 = [f'{samtools}', 'fixmate', '-pm', '-O', f'{out_format}',
                 '-@', f'{threads}', '-o', f'{output}']
             
             with ExitStack() as stack:
