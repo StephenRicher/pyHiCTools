@@ -98,7 +98,7 @@ def map(infiles, output, index, threads, sample,
             cmd8 = [f'{samtools}', 'view', '-u', '-f', '1', 
                 '-@', f'{threads}', ]
             cmd9 = [f'{samtools}', 'fixmate', '-pm', '-O', f'{out_format}',
-                '-@', f'{threads}', '-o', f'{output}']
+                '-@', f'{threads}', '-', f'{output}']
             
             with ExitStack() as stack:
                 p6 = stack.enter_context(
