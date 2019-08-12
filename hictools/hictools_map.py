@@ -88,8 +88,6 @@ def map(infiles, output, index, threads, sample,
              
             os.remove(f'{sample}-R1.sorted.tmp.sam')
             os.remove(f'{sample}-R2.sorted.tmp.sam')       
-            if remove_intermediate:
-                os.remove(intermediate)
     
             cmd6 = [f'{samtools}', 'sort', '-l', '0', '-m', '2G', 
                 '-@', f'{threads}', f'{intermediate}']
@@ -103,7 +101,6 @@ def map(infiles, output, index, threads, sample,
                 '-@', f'{threads}', '-', '-']
             cmd11 = [f'{samtools}', 'view', '-O', f'{out_format}', '-f', '1', 
                 '-@', f'{threads}', '-o', f'{output}' ]
-
             
             with ExitStack() as stack:
                 p6 = stack.enter_context(
@@ -129,6 +126,9 @@ def map(infiles, output, index, threads, sample,
                 log.debug(f'Exit_codes for p6, p7, p8, p9, p10: {exit_codes}.')
                 if not all(ec is 0 for ec in exit_codes):
                     log.error('A sub-process returned a non-zero exit code.')
+
+            if remove_intermediate:
+                os.remove(intermediate)
 
         # Ensure tmp file is always written to log.
         finally:
