@@ -25,7 +25,7 @@ def map(infiles, output, index, threads, sample,
     fun_name = sys._getframe().f_code.co_name
     log = logging.getLogger(f'{__name__}.{fun_name}')
     
-    out_format = '-S' if sam_out else '-b'
+    out_format = 'SAM' if sam_out else 'BAM'
 
 
     if not intermediate:
@@ -101,7 +101,7 @@ def map(infiles, output, index, threads, sample,
                 '-@', f'{threads}']
             cmd9 = [f'{samtools}', 'fixmate', '-pr', '-O', 'SAM',
                 '-@', f'{threads}', '-', '-']
-            cmd10 = [f'{samtools}', 'view', f'{out_format}', '-f', '1', 
+            cmd10 = [f'{samtools}', 'view', '-O', f'{out_format}', '-f', '1', 
                 '-@', f'{threads}', '-o', f'{output}' ]
 
             
