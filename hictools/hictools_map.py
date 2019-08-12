@@ -25,7 +25,7 @@ def map(infiles, output, index, threads, sample,
     fun_name = sys._getframe().f_code.co_name
     log = logging.getLogger(f'{__name__}.{fun_name}')
     
-    out_format = 'SAM' if sam_out else 'BAM'
+    out_format = '-S' if sam_out else '-b'
 
 
     if not intermediate:
@@ -70,7 +70,7 @@ def map(infiles, output, index, threads, sample,
                         
             cmd4 = [f'{samtools}', 'merge', '-un', '-@', f'{threads}', '-', 
                 f'{sample}-R1.sorted.tmp.sam', f'{sample}-R2.sorted.tmp.sam']
-            cmd5 = [f'{samtools}', 'fixmate', '-p', '-O', f'{out_format}',
+            cmd5 = [f'{samtools}', 'fixmate', '-pm', '-O', f'{out_format}',
                 '-@', f'{threads}', '-', f'{intermediate}'] 
 
             with ExitStack() as stack:
@@ -91,20 +91,25 @@ def map(infiles, output, index, threads, sample,
             if remove_intermediate:
                 os.remove(intermediate)
     
-            cmd6 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15', 
+            cmd6 = [f'{samtools}', 'sort', '-l', '0', '-m', '2G', 
                 '-@', f'{threads}', f'{intermediate}']
-            cmd7 = [f'{samtools}', 'fixmate', '-pr', '-O', 'SAM',
+            cmd7 = [f'{samtools}', 'markdup', '-sr', '-O', 'SAM',
                 '-@', f'{threads}', '-', '-']
-            cmd8 = [f'{samtools}', 'view', '-u', '-f', '1', 
-                '-@', f'{threads}', ]
-            cmd9 = [f'{samtools}', 'fixmate', '-pmr', '-O', f'{out_format}',
-                '-@', f'{threads}', '-', f'{output}']
+            cmd8 = [f'{samtools}', 'sort', '-l', '0', '-n', '-m', '2G', 
+                '-@', f'{threads}']
+            cmd6 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15', 
+                '-@', f'{threads}']
+            cmd9 = [f'{samtools}', 'fixmate', '-pr', '-O', 'SAM',
+                '-@', f'{threads}', '-', '-']
+            cmd10 = [f'{samtools}', 'view', f'{out_format}', '-f', '1', 
+                '-@', f'{threads}', '-o', f'{output}' ]
+
             
             with ExitStack() as stack:
                 p6 = stack.enter_context(
                     Popen(cmd6, stdout = PIPE, stderr = tmp))
                 p7 = stack.enter_context(
-                    Popen(cmd7, stdin = p6.stdout, stdout = PIPE, stderr = tmp))
+                    Popen(cmd7, stdin = p6.stdout, stdout = PIPE))
                 p6.stdout.close()
                 p8 = stack.enter_context(
                     Popen(cmd8, stdin = p7.stdout, stdout = PIPE, stderr = tmp))
@@ -112,10 +117,13 @@ def map(infiles, output, index, threads, sample,
                 p9 = stack.enter_context(
                     Popen(cmd9, stdin = p8.stdout, stderr = tmp))
                 p8.stdout.close()
+                p10 = stack.enter_context(
+                    Popen(cmd10, stdin = p9.stdout, stderr = tmp))
+                p9.stdout.close()
                 
-                exit_codes = [p.wait() for p in [p6, p7, p8, p9]]
+                exit_codes = [p.wait() for p in [p6, p7, p8, p9, p10]]
                 
-                log.debug(f'Exit_codes for p6, p7, p8, p9: {exit_codes}.')
+                log.debug(f'Exit_codes for p6, p7, p8, p9, p10: {exit_codes}.')
                 if not all(ec is 0 for ec in exit_codes):
                     log.error('A sub-process returned a non-zero exit code.')
 
