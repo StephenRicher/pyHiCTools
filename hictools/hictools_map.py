@@ -70,7 +70,7 @@ def map(infiles, output, index, threads, sample,
                         
             cmd4 = [f'{samtools}', 'merge', '-un', '-@', f'{threads}', '-', 
                 f'{sample}-R1.sorted.tmp.sam', f'{sample}-R2.sorted.tmp.sam']
-            cmd5 = [f'{samtools}', 'fixmate', '-pr', '-O', f'{out_format}',
+            cmd5 = [f'{samtools}', 'fixmate', '-p', '-O', f'{out_format}',
                 '-@', f'{threads}', '-', f'{intermediate}'] 
 
             with ExitStack() as stack:
@@ -93,11 +93,11 @@ def map(infiles, output, index, threads, sample,
     
             cmd6 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15', 
                 '-@', f'{threads}', f'{intermediate}']
-            cmd7 = [f'{samtools}', 'fixmate', '-p', '-O', 'SAM',
+            cmd7 = [f'{samtools}', 'fixmate', '-pr', '-O', 'SAM',
                 '-@', f'{threads}', '-', '-']
             cmd8 = [f'{samtools}', 'view', '-u', '-f', '1', 
                 '-@', f'{threads}', ]
-            cmd9 = [f'{samtools}', 'fixmate', '-pm', '-O', f'{out_format}',
+            cmd9 = [f'{samtools}', 'fixmate', '-pmr', '-O', f'{out_format}',
                 '-@', f'{threads}', '-', f'{output}']
             
             with ExitStack() as stack:
