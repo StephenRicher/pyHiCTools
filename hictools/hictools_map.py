@@ -107,12 +107,15 @@ def map(infiles, output, index, threads, sample,
                     Popen(cmd7, stdin = p6.stdout, stdout = PIPE, stderr = tmp))
                 p6.stdout.close()
                 p8 = stack.enter_context(
-                    Popen(cmd8, stdin = p7.stdout, stderr = tmp))
+                    Popen(cmd8, stdin = p7.stdout, stdout = PIPE, stderr = tmp))
                 p7.stdout.close()
+                p9 = stack.enter_context(
+                    Popen(cmd9, stdin = p8.stdout, stderr = tmp))
+                p8.stdout.close()
                 
-                exit_codes = [p.wait() for p in [p6, p7, p8]]
+                exit_codes = [p.wait() for p in [p6, p7, p8, p9]]
                 
-                log.debug(f'Exit_codes for p6, p7, p8: {exit_codes}.')
+                log.debug(f'Exit_codes for p6, p7, p8, p9: {exit_codes}.')
                 if not all(ec is 0 for ec in exit_codes):
                     log.error('A sub-process returned a non-zero exit code.')
 
