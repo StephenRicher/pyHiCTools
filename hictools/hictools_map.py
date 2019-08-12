@@ -97,11 +97,11 @@ def map(infiles, output, index, threads, sample,
                 '-@', f'{threads}', '-', '-']
             cmd8 = [f'{samtools}', 'sort', '-l', '0', '-n', '-m', '2G', 
                 '-@', f'{threads}']
-            cmd6 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15', 
+            cmd9 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15', 
                 '-@', f'{threads}']
-            cmd9 = [f'{samtools}', 'fixmate', '-pr', '-O', 'SAM',
+            cmd10 = [f'{samtools}', 'fixmate', '-pr', '-O', 'SAM',
                 '-@', f'{threads}', '-', '-']
-            cmd10 = [f'{samtools}', 'view', '-O', f'{out_format}', '-f', '1', 
+            cmd11 = [f'{samtools}', 'view', '-O', f'{out_format}', '-f', '1', 
                 '-@', f'{threads}', '-o', f'{output}' ]
 
             
@@ -115,11 +115,14 @@ def map(infiles, output, index, threads, sample,
                     Popen(cmd8, stdin = p7.stdout, stdout = PIPE, stderr = tmp))
                 p7.stdout.close()
                 p9 = stack.enter_context(
-                    Popen(cmd9, stdin = p8.stdout, stderr = tmp))
+                    Popen(cmd9, stdin = p8.stdout, stdout = PIPE, stderr = tmp))
                 p8.stdout.close()
                 p10 = stack.enter_context(
-                    Popen(cmd10, stdin = p9.stdout, stderr = tmp))
+                    Popen(cmd10, stdin = p9.stdout, stdout = PIPE, stderr = tmp))
                 p9.stdout.close()
+                p11 = stack.enter_context(
+                    Popen(cmd11, stdin = p10.stdout, stderr = tmp))
+                p10.stdout.close()
                 
                 exit_codes = [p.wait() for p in [p6, p7, p8, p9, p10]]
                 
