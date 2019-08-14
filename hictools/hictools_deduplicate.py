@@ -25,13 +25,14 @@ def deduplicate(infile, output, threads, samtools, sam_out):
     
     out_format = 'S' if sam_out else 'b'
     stdin = sys.stdin if infile == '-' else None
-
-    cmd1 = [f'{samtools}', 'sort', '-O', 'SAM', '-m', '1G', 
-        '-@', f'{threads}', f'{infile}']
-    cmd2 = [f'{samtools}', 'markdup', '-sr', '-O', 'SAM',
+    cmd1 = [f'{samtools}', 'fixmate', '-pm', '-O', 'SAM',
+        '-@', f'{threads}', f'{infile}', '-']
+    cmd2 = [f'{samtools}', 'sort', '-O', 'SAM', '-m', '1G', 
+        '-@', f'{threads}']
+    cmd3 = [f'{samtools}', 'markdup', '-sr', '-O', 'SAM',
         '-@', f'{threads}', '-', '-']
-    cmd3 = [f'{samtools}', 'sort', '-l', '0', '-n', '-m', '1G', 
-        '-@', f'{threads}', '-o', f'{output}', '-']
+    cmd4 = [f'{samtools}', 'sort', '-l', '0', '-n', '-m', '1G', 
+        '-@', f'{threads}', '-o', f'{output}']
         
     with ExitStack() as stack:
         try:
@@ -39,12 +40,14 @@ def deduplicate(infile, output, threads, samtools, sam_out):
             p1 = stack.enter_context(
                 Popen(cmd1, stdin = stdin, stdout = PIPE, stderr = tmp))
             p2 = stack.enter_context(
-                Popen(cmd2, stdin = p1.stdout, stdout = PIPE))
+                Popen(cmd2, stdin = p1.stdout, stdout = PIPE, stderr = tmp))
             p1.stdout.close()
             p3 = stack.enter_context(
-                Popen(cmd3, stdin = p2.stdout, stderr = tmp))
+                Popen(cmd3, stdin = p2.stdout, stdout = PIPE))
             p2.stdout.close()
-            
+            p4 = stack.enter_context(
+                Popen(cmd4, stdin = p3.stdout, stderr = tmp))
+            p3.stdout.close()
             exit_codes = [p.wait() for p in [p1, p2, p3]]
             log.debug(f'Exit_codes for p1, p2, p3: {exit_codes}.')
             if not all(ec is 0 for ec in exit_codes):
