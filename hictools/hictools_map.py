@@ -93,11 +93,11 @@ def map(infiles, output, index, threads, sample,
                 '-@', f'{threads}', f'{intermediate}']
             cmd7 = [f'{samtools}', 'markdup', '-sr', '-O', 'SAM',
                 '-@', f'{threads}', '-', '-']
-            cmd8 = [f'{samtools}', 'sort', '-l', '0', '-n', '-m', '2G', 
+            cmd8 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15', 
                 '-@', f'{threads}']
-            cmd9 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15', 
+            cmd9 = [f'{samtools}', 'sort', '-l', '0', '-n', '-m', '2G', 
                 '-@', f'{threads}']
-            cmd10 = [f'{samtools}', 'fixmate', '-pr', '-O', 'SAM',
+            cmd10 = [f'{samtools}', 'fixmate', '-p', '-O', 'SAM',
                 '-@', f'{threads}', '-', '-']
             cmd11 = [f'{samtools}', 'view', '-O', f'{out_format}', '-f', '1', 
                 '-@', f'{threads}', '-o', f'{output}' ]
