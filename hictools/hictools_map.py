@@ -91,7 +91,7 @@ def map(infiles, output, index, threads, sample,
     
             cmd6 = [f'{samtools}', 'view', '-u', '-F', '12', '-q', '15', 
                 '-@', f'{threads}', f'{intermediate}']
-            cmd7 = [f'{samtools}', 'fixmate', '-p', '-O', 'SAM',
+            cmd7 = [f'{samtools}', 'fixmate', '-pm', '-O', 'SAM',
                 '-@', f'{threads}', '-', '-']
             cmd8 = [f'{samtools}', 'view', '-O', f'{out_format}', '-f', '1', 
                 '-@', f'{threads}', '-o', f'{output}' ]
