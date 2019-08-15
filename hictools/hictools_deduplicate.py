@@ -25,14 +25,16 @@ def deduplicate(infile, output, threads, samtools, sam_out):
     
     out_format = 'S' if sam_out else 'b'
     stdin = sys.stdin if infile == '-' else None
-    cmd1 = [f'{samtools}', 'fixmate', '-pm', '-O', 'SAM',
-        '-@', f'{threads}', f'{infile}', '-']
-    cmd2 = [f'{samtools}', 'sort', '-O', 'SAM', '-m', '1G', 
+    cmd1 = [f'{samtools}', 'sort', '-O', 'SAM', '-m', '1G', 
         '-@', f'{threads}']
-    cmd3 = [f'{samtools}', 'markdup', '-sr', '-O', 'SAM',
+    cmd2 = [f'{samtools}', 'markdup', '-sr', '-O', 'SAM',
         '-@', f'{threads}', '-', '-']
-    cmd4 = [f'{samtools}', 'sort', '-l', '0', '-n', '-m', '1G', 
-        '-@', f'{threads}', '-o', f'{output}']
+    cmd3 = [f'{samtools}', 'sort', '-l', '0', '-n', '-m', '1G', 
+        '-@', f'{threads}']
+    cmd4 = [f'{samtools}', 'fixmate', '-p', '-O', 'SAM',
+        '-@', f'{threads}', '-', '-']
+    cmd5 = [f'{samtools}', 'view', '-O', f'{out_format}', '-f', '1', 
+        '-@', f'{threads}', '-o', f'{output}' ]
         
     with ExitStack() as stack:
         try:
@@ -46,10 +48,13 @@ def deduplicate(infile, output, threads, samtools, sam_out):
                 Popen(cmd3, stdin = p2.stdout, stdout = PIPE))
             p2.stdout.close()
             p4 = stack.enter_context(
-                Popen(cmd4, stdin = p3.stdout, stderr = tmp))
+                Popen(cmd4, stdin = p3.stdout, stdout = PIPE, stderr = tmp))
             p3.stdout.close()
-            exit_codes = [p.wait() for p in [p1, p2, p3]]
-            log.debug(f'Exit_codes for p1, p2, p3: {exit_codes}.')
+            p5 = stack.enter_context(
+                Popen(cmd5, stdin = p4.stdout, stderr= tmp))
+            p4.stdout.close()
+            exit_codes = [p.wait() for p in [p1, p2, p3, p4, p5]]
+            log.debug(f'Exit_codes for p1, p2, p3, p4, p5: {exit_codes}.')
             if not all(ec is 0 for ec in exit_codes):
                 log.error('A sub-process returned a non-zero exit code.')
     
