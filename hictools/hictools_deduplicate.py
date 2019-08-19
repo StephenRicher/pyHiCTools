@@ -23,7 +23,7 @@ def deduplicate(infile, output, threads, samtools, sam_out):
     fun_name = sys._getframe().f_code.co_name
     log = logging.getLogger(f'{__name__}.{fun_name}')
     
-    out_format = 'S' if sam_out else 'b'
+    out_format = 'SAM' if sam_out else 'BAM'
     stdin = sys.stdin if infile == '-' else None
     cmd1 = [f'{samtools}', 'sort', '-O', 'SAM', '-m', '1G', 
         '-@', f'{threads}']
@@ -42,10 +42,10 @@ def deduplicate(infile, output, threads, samtools, sam_out):
             p1 = stack.enter_context(
                 Popen(cmd1, stdin = stdin, stdout = PIPE, stderr = tmp))
             p2 = stack.enter_context(
-                Popen(cmd2, stdin = p1.stdout, stdout = PIPE, stderr = tmp))
+                Popen(cmd2, stdin = p1.stdout, stdout = PIPE))
             p1.stdout.close()
             p3 = stack.enter_context(
-                Popen(cmd3, stdin = p2.stdout, stdout = PIPE))
+                Popen(cmd3, stdin = p2.stdout, stdout = PIPE, stderr = tmp))
             p2.stdout.close()
             p4 = stack.enter_context(
                 Popen(cmd4, stdin = p3.stdout, stdout = PIPE, stderr = tmp))
