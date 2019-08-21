@@ -21,14 +21,14 @@ def description():
     return __doc__
 
 def filter(
-    infile, output, samtools, sam_out, min_inward, min_outward, max_ditag):
+    infile, output, samtools, sam_out, min_inward, min_outward, min_ditag, max_ditag):
 
     ''' Iterate through each infile. '''
     
     fun_name = sys._getframe().f_code.co_name
     log = logging.getLogger(f'{__name__}.{fun_name}')
 
-    if min_inward == min_outward == max_ditag == None:
+    if min_inward == min_outward == max_ditag == min_ditag == None:
         log.error('No filter settings defined.')
         sys.exit(1)
 
@@ -55,6 +55,9 @@ def filter(
                         continue
                     if max_ditag is not None:
                         if read1.optional['dt:i'] > max_ditag:
+                            continue
+                    if min_ditag is not None:
+                        if read1.optional['dt:i'] < min_ditag:
                             continue
                     if read1.optional['or:Z'] == 'Inward':
                         if min_inward is not None:
