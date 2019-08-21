@@ -253,6 +253,10 @@ def main():
         type = positive_int, 
         help = 'Specify mininum insert size for outward facing read pairs.')
     filter_parser.add_argument(
+        '--min_ditag', default = None, 
+        type = positive_int, 
+        help = 'Specify minimum ditag size for read pairs.')
+    filter_parser.add_argument(
         '--max_ditag', default = None, 
         type = positive_int, 
         help = 'Specify maximum ditag size for read pairs.')
