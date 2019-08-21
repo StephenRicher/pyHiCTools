@@ -26,8 +26,8 @@ def extract(
     if not sample:
         sample = infile
         
-    with smart_open(output, 'wt', write_gzip) as out_obj, \
-            sam_open(infile, samtools = samtools) as in_obj:
+    with sam_open(infile, samtools = samtools) as in_obj, \
+            smart_open(output, 'wt', write_gzip) as out_obj:
         log.info(f'Writing output to {output}.')
         out_obj.write(
             'sample\torientation\tinteraction_type\tditag_length\t'
