@@ -49,16 +49,17 @@ def filter(
                     log.exception('Odd number of alignments in file.')
                     sys.exit(1)
                 if not is_valid(read1, read2):
-                    log.error(f'Invalid format in {read1.qname}.') 
-                elif read1.optional['it:Z'] == "cis":
+                    log.error(f'Invalid format in {read1.qname}.')
+                    continue
+                if max_ditag is not None:
+                    if read1.optional['dt:i'] > max_ditag:
+                        continue
+                if min_ditag is not None:
+                    if read1.optional['dt:i'] < min_ditag:
+                        continue
+                if read1.optional['it:Z'] == "cis":
                     if read1.optional['fs:i'] == 0:
                         continue
-                    if max_ditag is not None:
-                        if read1.optional['dt:i'] > max_ditag:
-                            continue
-                    if min_ditag is not None:
-                        if read1.optional['dt:i'] < min_ditag:
-                            continue
                     if read1.optional['or:Z'] == 'Inward':
                         if min_inward is not None:
                             if read1.optional['is:i'] < min_inward:
