@@ -39,6 +39,7 @@ def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
     log = logging.getLogger(f'{__name__}.{fun_name}')
 
     ligation_seq, restriction_seq = process_restriction(restriction)
+    total = 0
     truncated = 0
     truncated_length = 0
 
@@ -53,6 +54,7 @@ def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
             line=line.rstrip('\n')
             # Sequence line
             if index % 4 == 1:
+                total += 1
                 line = line.upper()
                 if ligation_seq in line:
                     line = line[0: line.index(ligation_seq)] + restriction_seq
@@ -71,4 +73,7 @@ def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
         except ZeroDivisionError:
             mean_truncated_length = 'na'
         sys.stderr.write(
-            f'{sample}\t{truncated}\t{ mean_truncated_length}\n')
+            f'{sample}\tTotal\t{total}\n'
+            f'{sample}\tTruncated\t{truncated}\n'
+            f'{sample}\tNot truncated\t{total-truncated}\n'
+            f'{sample}\tMean truncated length\t{mean_truncated_length}\n')
