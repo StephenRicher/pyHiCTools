@@ -260,6 +260,9 @@ def main():
         '--max_ditag', default = None, 
         type = positive_int, 
         help = 'Specify maximum ditag size for read pairs.')
+    filter_parser.add_argument(
+        '-n', '--sample', default = None,
+        help = 'Sample name in case infile name cannot be detected.')
     filter_parser.set_defaults(function = hictools_filter.filter)
                   
     args = parser.parse_args()
