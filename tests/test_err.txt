@@ -1,0 +1,4 @@
+test.txt	Total	1
+test.txt	Truncated	1
+test.txt	Not truncated	0
+test.txt	Mean truncated length	8.0

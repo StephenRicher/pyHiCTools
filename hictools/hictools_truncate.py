@@ -7,8 +7,8 @@
 
 import os, argparse, sys, logging, gzip, contextlib, binascii, re, select, time
 
-from common_tools.gzip_opener import *
-from common_tools.exception_logger import *
+from pyCommonTools.gzip_opener import *
+from pyCommonTools.exception_logger import *
 
 def description():
     
@@ -21,14 +21,12 @@ def description():
 def process_restriction(restriction):
     assert(isinstance(restriction, str))
     assert(restriction.count('^') == 1)
-    restriction = restriction.upper()
-    restriction_seq = restriction.replace('^','')
+    restriction_seq = restriction.upper().replace('^','')
     cut_site1 = restriction.index('^')
     ligation2 = restriction_seq[cut_site1:]
     cut_site2 = len(restriction) - cut_site1 - 1
     ligation1 = restriction_seq[0:cut_site2]
     ligation_seq = ligation1 + ligation2
-    cut_index = len(ligation1)
     return ligation_seq, restriction_seq
 
 def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
