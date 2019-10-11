@@ -44,7 +44,7 @@ def map(infiles, output, index, threads, sample, sensitivity,
                     '-p', f'{threads}', f'--{sensitivity}']
                 cmd2 = ['awk', '-v', 'OFS=\t', 
                     f'!/^ *@/ {{$2 = $2+{flag}}} {{print}}']
-                cmd3 = [f'{samtools}', 'sort', '-n', '-O', 'SAM', '-m', '1G', 
+                cmd3 = [f'{samtools}', 'sort', '-n', '-O', 'SAM', '-m', '2G', 
                     '-@', f'{threads}', '-o', f'{sample}-{read}.sorted.tmp.sam']
                 
                 sys.stderr.write(f'Mapping {fastq}.\n')
