@@ -7,7 +7,7 @@
 import os, sys, time, logging, tempfile
 from subprocess import Popen, PIPE
 from contextlib import ExitStack
-from common_tools.gzip_opener import *
+from pyCommonTools.gzip_opener import *
 
 def description():
     

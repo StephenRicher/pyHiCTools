@@ -7,8 +7,8 @@
 
 import argparse, sys, logging, re, select
 
-from common_tools.gzip_opener import *
-from common_tools.exception_logger import *
+from pyCommonTools.gzip_opener import *
+from pyCommonTools.exception_logger import *
 
 def description():
     

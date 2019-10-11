@@ -6,9 +6,9 @@
 
 import argparse, collections, bisect, time, re, sys, math, logging
 
-from common_tools.sam_class import *
-from common_tools.sam_opener import *
-from common_tools.gzip_opener import *
+from pyCommonTools.sam_class import *
+from pyCommonTools.sam_opener import *
+from pyCommonTools.gzip_opener import *
 
 from hic_filter_functions import *
 

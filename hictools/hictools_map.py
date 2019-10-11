@@ -7,7 +7,7 @@
 import os, sys, time, logging, tempfile
 from subprocess import Popen, PIPE
 from contextlib import ExitStack
-from common_tools.gzip_opener import *
+from pyCommonTools.gzip_opener import *
 
 def description():
     
@@ -17,7 +17,7 @@ def description():
         
     return __doc__
 
-def map(infiles, output, index, threads, sample,
+def map(infiles, output, index, threads, sample, sensitivity,
         intermediate, samtools, bowtie2, sam_out):
     
     ''' Map R1 and R2 of HiC paired-end reads seperately. '''
@@ -26,7 +26,6 @@ def map(infiles, output, index, threads, sample,
     log = logging.getLogger(f'{__name__}.{fun_name}')
     
     out_format = 'SAM' if sam_out else 'BAM'
-
 
     if not intermediate:
         remove_intermediate = True
@@ -42,7 +41,7 @@ def map(infiles, output, index, threads, sample,
                 read = 'R2' if i else 'R1'
                 
                 cmd1 = [f'{bowtie2}', '-x', f'{index}', '-U', f'{fastq}', 
-                    '-p', f'{threads}', '--very-sensitive']
+                    '-p', f'{threads}', f'--{sensitivity}']
                 cmd2 = ['awk', '-v', 'OFS=\t', 
                     f'!/^ *@/ {{$2 = $2+{flag}}} {{print}}']
                 cmd3 = [f'{samtools}', 'sort', '-n', '-O', 'SAM', '-m', '1G', 

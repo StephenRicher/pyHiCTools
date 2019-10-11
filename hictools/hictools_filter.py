@@ -7,8 +7,8 @@
 
 import sys, argparse, logging
 
-from common_tools.sam_class import *
-from common_tools.sam_opener import *
+from pyCommonTools.sam_class import *
+from pyCommonTools.sam_opener import *
 
 from hic_filter_functions import *
 

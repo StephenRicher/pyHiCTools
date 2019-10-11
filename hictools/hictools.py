@@ -5,8 +5,8 @@
 
 import sys, argparse, logging, select, re, time
 
-from common_tools.exception_logger import *
-from common_tools.gzip_opener import *
+from pyCommonTools.exception_logger import *
+from pyCommonTools.gzip_opener import *
 
 import  hictools_digest, hictools_truncate, \
         hictools_map, hictools_filter, \
@@ -174,6 +174,12 @@ def main():
         '-n', '--sample', 
         default = f'sample_{time.strftime("%Y%m%d-%H%M%S")}',
         help = 'Sample name to prefix R1 and R2 BAMs.')
+    sensitivity_options = ['very-fast', 'fast', 'sensitive', 'very-sensitive']
+    map_parser.add_argument(
+        '--sensitivity',
+        default = 'very-sensitive',
+        choices = sensitivity_options,
+        help = 'Set bowtie2 alignment sensitivity.')
     requiredNamed_map = map_parser.add_argument_group(
         'required named arguments')
     requiredNamed_map.add_argument(
@@ -273,20 +279,16 @@ def main():
         parser.print_help()
         sys.exit()
     
-    fun_name = sys._getframe().f_code.co_name
-    log = logging.getLogger(f'{__name__}.{fun_name}')
-    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    log_level = logging.DEBUG if args.verbose else None
-    (logging.basicConfig(
-        filename = args.log,
-        format = log_format, 
-        level = log_level))
-    sys.excepthook = handle_exception
+    log = create_logger()
+    initiliase_logger(
+        log_output = args.log,
+        log_level = logging.DEBUG if args.verbose else None)
 
     args_dict = vars(args)
     [args_dict.pop(key) for key in ['command', 'function', 'verbose', 'log']]
     return func(**vars(args))
 
+    
 def restriction_seq(value):
         
     ''' Custom argument type for restriction enzyme argument. '''
