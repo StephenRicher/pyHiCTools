@@ -7,8 +7,8 @@
 
 import os, argparse, sys, logging, gzip, contextlib, binascii, re, select, time
 
-from pyCommonTools.gzip_opener import *
-from pyCommonTools.exception_logger import *
+import pyCommonTools.logging
+import pyCommonTools.open
 
 def description():
     
@@ -33,8 +33,7 @@ def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
     
     ''' Run main loop. '''
 
-    fun_name = sys._getframe().f_code.co_name
-    log = logging.getLogger(f'{__name__}.{fun_name}')
+    log = pyCommonTools.logging.create_logger()
 
     ligation_seq, restriction_seq = process_restriction(restriction)
     total = 0
@@ -44,8 +43,8 @@ def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
     if not sample:
         sample = infile
 
-    with smart_open(output, 'wt', write_gzip) as out_obj, \
-            smart_open(infile, 'rt', read_gzip) as in_obj:
+    with pyCommonTools.open.smart_open(output, 'wt', write_gzip) as out_obj, \
+            pyCommonTools.open.smart_open(infile, 'rt', read_gzip) as in_obj:
             
         is_truncated = False
         for index, line in enumerate(in_obj):

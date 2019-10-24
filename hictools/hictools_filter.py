@@ -7,8 +7,10 @@
 
 import sys, argparse, logging
 
-from pyCommonTools.sam_class import *
-from pyCommonTools.sam_opener import *
+import pyCommonTools.logging
+import pyCommonTools.open
+import pyCommonTools.sam_opener
+import pyCommonTools.sam_class
 
 from hic_filter_functions import *
 
@@ -25,8 +27,7 @@ def filter(
 
     ''' Iterate through each infile. '''
     
-    fun_name = sys._getframe().f_code.co_name
-    log = logging.getLogger(f'{__name__}.{fun_name}')
+    log = pyCommonTools.logging.create_logger()
 
     if min_inward == min_outward == max_ditag == min_ditag == None:
         log.error('No filter settings defined.')
@@ -37,8 +38,8 @@ def filter(
     
     mode = 'wt' if sam_out else 'wb'
 
-    with sam_open(output, mode, samtools = samtools) as out_obj, \
-            sam_open(infile, samtools = samtools) as in_obj:
+    with pyCommonTools.sam_opener.sam_open(output, mode, samtools = samtools) as out_obj, \
+            pyCommonTools.sam_opener.sam_open(infile, samtools = samtools) as in_obj:
         log.info(f'Writing output to {output}.')
         total = 0
         retained = 0
@@ -54,8 +55,8 @@ def filter(
                 out_obj.write(line)
             else:
                 try:
-                    read1 = sam(line.split())
-                    read2 = sam(next(in_obj).split())
+                    read1 = pyCommonTools.sam_class.sam(line.split())
+                    read2 = pyCommonTools.sam_class.sam(next(in_obj).split())
                     total += 1
                 except StopIteration:
                     log.exception('Odd number of alignments in file.')

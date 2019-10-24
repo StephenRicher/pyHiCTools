@@ -5,8 +5,8 @@
 
 import sys, argparse, logging, select, re, time
 
-from pyCommonTools.exception_logger import *
-from pyCommonTools.gzip_opener import *
+import pyCommonTools.logging
+import pyCommonTools.open
 
 import  hictools_digest, hictools_truncate, \
         hictools_map, hictools_filter, \
@@ -279,8 +279,8 @@ def main():
         parser.print_help()
         sys.exit()
     
-    log = create_logger()
-    initiliase_logger(
+    log = pyCommonTools.logging.create_logger()
+    pyCommonTools.logging.initiliase_logger(
         log_output = args.log,
         log_level = logging.DEBUG if args.verbose else None)
 

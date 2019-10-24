@@ -7,8 +7,8 @@
 
 import argparse, sys, logging, re, select
 
-from pyCommonTools.gzip_opener import *
-from pyCommonTools.exception_logger import *
+import pyCommonTools.logging
+import pyCommonTools.open
 
 def description():
     
@@ -22,11 +22,10 @@ def digest(infile, output, read_gzip, write_gzip, restriction):
     
     ''' Iterate through each infile. '''
     
-    fun_name = sys._getframe().f_code.co_name
-    log = logging.getLogger(f'{__name__}.{fun_name}')
+    log = pyCommonTools.logging.create_logger()
 
-    with smart_open(output, 'wt', write_gzip) as out_obj, \
-            smart_open(infile, 'rt', read_gzip) as in_obj:
+    with pyCommonTools.open.smart_open(output, 'wt', write_gzip) as out_obj, \
+            pyCommonTools.open.smart_open(infile, 'rt', read_gzip) as in_obj:
         log.info(f'Writing output to {output}.')
         header = 1
         for index, line in enumerate(in_obj):
@@ -51,8 +50,7 @@ def digest(infile, output, read_gzip, write_gzip, restriction):
 
 def find_cut_sites(ref_seq, ref, restriction, out_obj):
     
-    fun_name = sys._getframe().f_code.co_name
-    log = logging.getLogger(f'{__name__}.{fun_name}')
+    log = pyCommonTools.logging.create_logger()
 
     if not ref_seq:
         log.error(f'Reference {ref} contains no sequence.')
@@ -79,8 +77,7 @@ def find_cut_sites(ref_seq, ref, restriction, out_obj):
     
 def check_valid_seq(seq):
     
-    fun_name = sys._getframe().f_code.co_name
-    log = logging.getLogger(f'{__name__}.{fun_name}')
+    log = pyCommonTools.logging.create_logger()
     
     return re.search('[^ATCGURYKMSWBDHVN-]', seq.strip('\n'), re.IGNORECASE)
         

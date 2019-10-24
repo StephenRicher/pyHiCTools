@@ -7,7 +7,6 @@
 import os, sys, time, logging, tempfile
 from subprocess import Popen, PIPE
 from contextlib import ExitStack
-from pyCommonTools.gzip_opener import *
 
 def description():
     
@@ -22,8 +21,7 @@ def map(infiles, output, index, threads, sample, sensitivity,
     
     ''' Map R1 and R2 of HiC paired-end reads seperately. '''
     
-    fun_name = sys._getframe().f_code.co_name
-    log = logging.getLogger(f'{__name__}.{fun_name}')
+    log = pyCommonTools.logging.create_logger()
     
     out_format = 'SAM' if sam_out else 'BAM'
 

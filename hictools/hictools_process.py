@@ -6,9 +6,10 @@
 
 import argparse, collections, bisect, time, re, sys, math, logging
 
-from pyCommonTools.sam_class import *
-from pyCommonTools.sam_opener import *
-from pyCommonTools.gzip_opener import *
+import pyCommonTools.logging
+import pyCommonTools.open
+import pyCommonTools.sam_opener
+import pyCommonTools.sam_class
 
 from hic_filter_functions import *
 
@@ -23,11 +24,13 @@ def description():
 def process(
     infile, output, read_gzip, samtools, sam_out, digest):
     
+    log = pyCommonTools.logging.create_logger()
+    
     mode = 'wt' if sam_out else 'wb'
         
-    with sam_open(output, mode, samtools = samtools) as out_obj, \
-            sam_open(infile, samtools = samtools) as in_obj, \
-            smart_open(digest, 'rt', read_gzip) as digest:
+    with pyCommonTools.sam_opener.sam_open(output, mode, samtools = samtools) as out_obj, \
+            pyCommonTools.sam_opener.sam_open(infile, samtools = samtools) as in_obj, \
+            pyCommonTools.open.smart_open(digest, 'rt', read_gzip) as digest:
         d = process_digest(digest)
         for line in in_obj:
             if line.startswith("@"):
@@ -35,8 +38,8 @@ def process(
                 continue
             else:
                 try:
-                    read1 = sam(line.split())
-                    read2 = sam(next(in_obj).split())
+                    read1 = pyCommonTools.sam_class.sam(line.split())
+                    read2 = pyCommonTools.sam_class.sam(next(in_obj).split())
                 except StopIteration:
                     log.exception("Odd number of alignments in file")
                 orientation, ditag_length, insert_size, interaction, fragment_seperation, read1_fragment, read2_fragment = run_filter(read1, read2, d)
@@ -61,7 +64,7 @@ def pysam_test():
     samfile = pysam.AlignmentFile("/media/stephen/Data/hic_analysis/data/test.sam", "rb")
     mysamfile = open("/media/stephen/Data/hic_analysis/data/test2.sam")
     for read_pysam, read_mysam in zip(samfile.fetch(), mysamfile):
-        myread = sam(read_mysam.split())
+        myread = pyCommonTools.sam_class.sam(read_mysam.split())
         assert read_pysam.get_reference_positions()[-1] + 1 == myread.right_pos
         assert read_pysam.get_reference_positions()[0] + 1 == myread.left_pos
         assert read_pysam.reference_length == myread.reference_length

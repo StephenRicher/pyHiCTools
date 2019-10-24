@@ -7,9 +7,10 @@
 
 import sys, argparse, logging
 
-from pyCommonTools.sam_class import *
-from pyCommonTools.sam_opener import *
-from pyCommonTools.gzip_opener import *
+import pyCommonTools.logging
+import pyCommonTools.open
+import pyCommonTools.sam_opener
+import pyCommonTools.sam_class
 
 from hic_filter_functions import *
 
@@ -23,11 +24,14 @@ def description():
 
 def extract(
     infile, output, samtools, sample, write_gzip):
+        
+    log = pyCommonTools.logging.create_logger()
+    
     if not sample:
         sample = infile
         
-    with sam_open(infile, samtools = samtools) as in_obj, \
-            smart_open(output, 'wt', write_gzip) as out_obj:
+    with pyCommonTools.sam_opener.sam_open(infile, samtools = samtools) as in_obj, \
+            pyCommonTools.open.smart_open(output, 'wt', write_gzip) as out_obj:
         log.info(f'Writing output to {output}.')
         out_obj.write(
             'sample\torientation\tinteraction_type\tditag_length\t'
@@ -37,8 +41,8 @@ def extract(
                 continue
             else:
                 try:
-                    read1 = sam(line.split())
-                    read2 = sam(next(in_obj).split())
+                    read1 = pyCommonTools.sam_class.sam(line.split())
+                    read2 = pyCommonTools.sam_class.sam(next(in_obj).split())
                 except StopIteration:
                     log.exception('Odd number of alignments in file')
                     sys.exit(1)

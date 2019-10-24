@@ -7,7 +7,6 @@
 import os, sys, time, logging, tempfile
 from subprocess import Popen, PIPE
 from contextlib import ExitStack
-from pyCommonTools.gzip_opener import *
 
 def description():
     
@@ -20,8 +19,7 @@ def description():
 def deduplicate(infile, output, threads, samtools, sam_out):
 
     
-    fun_name = sys._getframe().f_code.co_name
-    log = logging.getLogger(f'{__name__}.{fun_name}')
+    log = pyCommonTools.logging.create_logger()
     
     out_format = 'SAM' if sam_out else 'BAM'
     stdin = sys.stdin if infile == '-' else None
