@@ -69,7 +69,7 @@ setup(
     url = 'https://github.com/StephenRicher/pyHiCTools',
     scripts = ['bin/pyHiCTools'],
     python_requires = '>=3.6.0',
-    install_requires = ['pyCommonTools'],
+    install_requires = ['pyCommonTools>=1.3'],
     license = 'MIT',
     classifiers = [
         'Development Status :: 3 - Alpha',
