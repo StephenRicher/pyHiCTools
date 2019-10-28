@@ -42,7 +42,7 @@ class UploadCommand(Command):
     def finalize_options(self):
         pass
 
-    def run(self, version = version):
+    def run(self, version=version):
         try:
             self.status('Removing previous builds…')
             rmtree(os.path.join(os.path.dirname(__file__), 'dist'))
@@ -63,15 +63,15 @@ class UploadCommand(Command):
 
 
 setup(
-    name = 'pyHiCTools',
-    author = 'Stephen Richer',
-    author_email = 'sr467@bath.ac.uk',
-    url = 'https://github.com/StephenRicher/pyHiCTools',
-    scripts = ['bin/pyHiCTools'],
-    python_requires = '>=3.6.0',
-    install_requires = ['pyCommonTools>=1.3'],
-    license = 'MIT',
-    classifiers = [
+    name='pyHiCTools',
+    author='Stephen Richer',
+    author_email='sr467@bath.ac.uk',
+    url='https://github.com/StephenRicher/pyHiCTools',
+    scripts=['bin/pyHiCTools'],
+    python_requires='>=3.6.0',
+    install_requires=['pyCommonTools>=1.3'],
+    license='MIT',
+    classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Science/Research',
@@ -79,11 +79,11 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Natural Language :: English',
     ],
-    version = get_info()['__version__'],
-    description = __doc__,
-    long_description = read('README.md'),
-    long_description_content_type = 'text/markdown',
-    packages = find_packages(where = 'src'),
+    version=get_info()['__version__'],
+    description=__doc__,
+    long_description=read('README.md'),
+    long_description_content_type='text/markdown',
+    packages=find_packages(where='src'),
     package_dir={'': 'src'},
-    zip_safe = False,
+    zip_safe=False,
 )

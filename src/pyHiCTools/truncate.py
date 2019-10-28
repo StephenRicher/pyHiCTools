@@ -5,21 +5,21 @@
     ligation junction.
 '''
 
-import os, argparse, sys, logging, gzip, contextlib, binascii, re, select, time
-
+import sys
 import pyCommonTools as pct
 
 
 def process_restriction(restriction):
     assert(isinstance(restriction, str))
     assert(restriction.count('^') == 1)
-    restriction_seq = restriction.upper().replace('^','')
+    restriction_seq = restriction.upper().replace('^', '')
     cut_site1 = restriction.index('^')
     ligation2 = restriction_seq[cut_site1:]
     cut_site2 = len(restriction) - cut_site1 - 1
     ligation1 = restriction_seq[0:cut_site2]
     ligation_seq = ligation1 + ligation2
     return ligation_seq, restriction_seq
+
 
 def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
 
@@ -40,7 +40,7 @@ def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
 
         is_truncated = False
         for index, line in enumerate(in_obj):
-            line=line.rstrip('\n')
+            line = line.rstrip('\n')
             # Sequence line
             if index % 4 == 1:
                 total += 1

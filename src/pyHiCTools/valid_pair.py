@@ -2,11 +2,15 @@
 
 import pyCommonTools as pct
 
-log = pct.create_logger()
 
 def is_valid(read1, read2):
+
+    log = pct.create_logger()
+
     if read1.qname != read2.qname:
-        log.error(f'Qname mismatch: {read1.qname} {read2.qname} - is file name sorted?')
+        log.error(
+            f'Qname mismatch: {read1.qname} {read2.qname}. '
+            'Is file name sorted?')
     elif not read1.is_paired and not read2.is_paired:
         log.error(f'{read1.qname} is not paired')
     elif read1.is_read1 == read2.is_read1:

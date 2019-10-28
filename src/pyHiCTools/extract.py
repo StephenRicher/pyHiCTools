@@ -5,8 +5,7 @@
     hictools filter.
 """
 
-import sys, argparse, logging
-
+import sys
 import pyCommonTools as pct
 import pyHiCTools as hic
 
@@ -18,7 +17,7 @@ def extract(infile, output, samtools, sample, write_gzip):
     if not sample:
         sample = infile
 
-    with pct.open_sam(infile, samtools = samtools) as in_obj, \
+    with pct.open_sam(infile, samtools=samtools) as in_obj, \
             pct.open_gzip(output, 'wt', write_gzip) as out_obj:
         log.info(f'Writing output to {output}.')
         out_obj.write(
@@ -40,4 +39,3 @@ def extract(infile, output, samtools, sample, write_gzip):
                     f'{sample}\t{read1.optional["or:Z"]}\t'
                     f'{read1.optional["it:Z"]}\t{read1.optional["dt:i"]}\t'
                     f'{read1.optional["is:i"]}\t{read1.optional["fs:i"]}\n')
-

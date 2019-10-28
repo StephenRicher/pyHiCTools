@@ -5,20 +5,19 @@
     hictools process.
     """
 
-import sys, argparse, logging
-
+import sys
 import pyCommonTools as pct
 import pyHiCTools as hic
 
 
-def filter(
-    infile, output, sample, samtools, sam_out, min_inward, min_outward, min_ditag, max_ditag):
+def filter(infile, output, sample, samtools, sam_out,
+           min_inward, min_outward, min_ditag, max_ditag):
 
     ''' Iterate through each infile. '''
 
     log = pct.create_logger()
 
-    if min_inward == min_outward == max_ditag == min_ditag == None:
+    if (min_inward and min_outward and max_ditag and min_ditag) is None:
         log.error('No filter settings defined.')
         sys.exit(1)
 
@@ -27,8 +26,8 @@ def filter(
 
     mode = 'wt' if sam_out else 'wb'
 
-    with pct.open_sam(output, mode, samtools = samtools) as out_obj, \
-            pct.open_sam(infile, samtools = samtools) as in_obj:
+    with pct.open_sam(output, mode, samtools=samtools) as out_obj, \
+            pct.open_sam(infile, samtools=samtools) as in_obj:
         log.info(f'Writing output to {output}.')
         total = 0
         retained = 0
@@ -90,5 +89,3 @@ def filter(
             f'{sample}\tSame fragment\t{same_fragment}\n'
             f'{sample}\tInward insert < {min_inward}bp\t{below_min_inward}\n'
             f'{sample}\tOutward insert < {min_outward}bp\t{below_min_outward}\n')
-
-

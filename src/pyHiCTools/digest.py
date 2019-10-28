@@ -5,9 +5,10 @@
     reference sequence.
 '''
 
-import argparse, sys, logging, re, select
-
+import re
+import sys
 import pyCommonTools as pct
+
 
 def digest(infile, output, read_gzip, write_gzip, restriction):
 
@@ -34,10 +35,11 @@ def digest(infile, output, read_gzip, write_gzip, restriction):
                 invalid = check_valid_seq(line)
                 if invalid:
                     log.error(f'Invalid FASTA character {invalid.group(0)} '
-                               'on line {index}.')
+                              'on line {index}.')
                     sys.exit(1)
                 seqs.append(line.upper().strip('\n'))
         find_cut_sites(''.join(seqs), ref, restriction, out_obj)
+
 
 def find_cut_sites(ref_seq, ref, restriction, out_obj):
 
@@ -48,7 +50,7 @@ def find_cut_sites(ref_seq, ref, restriction, out_obj):
         ec = 1
     else:
         overhang = restriction.index('^')
-        site = restriction.replace('^','')
+        site = restriction.replace('^', '')
         matches = re.finditer(site, ref_seq)
         index = 0
         previous_end = 0
@@ -66,9 +68,9 @@ def find_cut_sites(ref_seq, ref, restriction, out_obj):
         ec = 0
     return ec
 
+
 def check_valid_seq(seq):
 
     log = pct.create_logger()
 
     return re.search('[^ATCGURYKMSWBDHVN-]', seq.strip('\n'), re.IGNORECASE)
-
