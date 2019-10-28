@@ -29,8 +29,8 @@ def extract(infile, output, samtools, sample, write_gzip):
                 continue
             else:
                 try:
-                    read1 = pct.Sam(line.split())
-                    read2 = pct.Sam(next(in_obj).split())
+                    read1 = pct.Sam(line)
+                    read2 = pct.Sam(next(in_obj))
                 except StopIteration:
                     log.exception('Odd number of alignments in file')
                     sys.exit(1)

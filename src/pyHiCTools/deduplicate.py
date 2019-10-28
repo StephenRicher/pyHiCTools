@@ -7,7 +7,7 @@
 import os, sys, time, logging, tempfile
 from subprocess import Popen, PIPE
 from contextlib import ExitStack
-
+import pyCommonTools as pct
 
 def deduplicate(infile, output, threads, samtools, sam_out):
 

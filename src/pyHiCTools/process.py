@@ -27,8 +27,8 @@ def process(
                 continue
             else:
                 try:
-                    read1 = pct.Sam(line.split())
-                    read2 = pct.Sam(next(in_obj).split())
+                    read1 = pct.Sam(line)
+                    read2 = pct.Sam(next(in_obj))
                 except StopIteration:
                     log.exception("Odd number of alignments in file")
                 orientation, ditag_length, insert_size, interaction, fragment_seperation, read1_fragment, read2_fragment = run_filter(read1, read2, d)
@@ -44,12 +44,12 @@ def process(
                 read2.optional['fs:i'] = fragment_seperation
                 read1.optional['fn:i'] = read1_fragment
                 read2.optional['fn:i'] = read2_fragment
-                out_obj.write(read1.print_sam())
-                out_obj.write(read2.print_sam())
+                out_obj.write(read1.get_record())
+                out_obj.write(read2.get_record())
 
 
 def run_filter(read1, read2, digest):
-    if not is_valid(read1, read2):
+    if not hic.valid_pair.is_valid(read1, read2):
        log.error(f'Invalid format in {read1.qname}.')
     read1, read2 = reorder_read_pair(read1, read2)
     orientation = get_orientation(read1, read2)

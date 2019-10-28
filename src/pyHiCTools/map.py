@@ -7,7 +7,7 @@
 import os, sys, time, logging, tempfile
 from subprocess import Popen, PIPE
 from contextlib import ExitStack
-
+import pyCommonTools as pct
 
 def map(infiles, output, index, threads, sample, sensitivity,
         intermediate, samtools, bowtie2, sam_out):

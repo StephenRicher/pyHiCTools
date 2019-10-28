@@ -16,7 +16,7 @@ def main():
     formatter_class = argparse.ArgumentDefaultsHelpFormatter
 
     parser = argparse.ArgumentParser(
-        prog = 'hictools',
+        prog = 'pyHiCTools',
         description = __doc__,
         formatter_class = formatter_class,
         epilog = epilog)
@@ -168,7 +168,7 @@ def main():
     # Deduplicate sub-parser
     deduplicate_parser = subparsers.add_parser('deduplicate',
         description = hic.deduplicate.__doc__,
-        help = 'Deduplicate aligned HiC sequences processed by hictools map.',
+        help = 'Deduplicate aligned HiC sequences processed by pyHiCTools map.',
         parents = [base_parser, parallel_parser, sam_parser,
             sam_input_parser, sam_output_parser],
         formatter_class = formatter_class,
@@ -198,7 +198,7 @@ def main():
         'required named arguments')
     requiredNamed_process.add_argument(
         '-d', '--digest', required = True,
-        help = 'Output of hictools digest using same '
+        help = 'Output of pyHiCTools digest using same '
                'reference genome as used to map reads.')
     process_parser.set_defaults(function = hic.process.process)
 
@@ -220,7 +220,7 @@ def main():
     # Filter sub-parser
     filter_parser = subparsers.add_parser('filter',
         description = hic.filter.__doc__,
-        help = 'Filter named-sorted SAM/BAM file processed with hictools process.',
+        help = 'Filter named-sorted SAM/BAM file processed with pyHiCTools process.',
         parents = [base_parser, sam_parser,
             sam_input_parser, sam_output_parser],
         formatter_class = formatter_class,

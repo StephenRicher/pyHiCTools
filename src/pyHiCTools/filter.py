@@ -44,8 +44,8 @@ def filter(
                 out_obj.write(line)
             else:
                 try:
-                    read1 = pct.Sam(line.split())
-                    read2 = pct.Sam(next(in_obj).split())
+                    read1 = pct.Sam(line)
+                    read2 = pct.Sam(next(in_obj))
                     total += 1
                 except StopIteration:
                     log.exception('Odd number of alignments in file.')
@@ -77,8 +77,8 @@ def filter(
                                 below_min_outward += 1
                                 continue
                 retained += 1
-                out_obj.write(read1.print_sam())
-                out_obj.write(read2.print_sam())
+                out_obj.write(read1.get_record())
+                out_obj.write(read2.get_record())
 
         sys.stderr.write(
             f'{sample}\tTotal\t{total}\n'
