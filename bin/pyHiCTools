@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+
+""" Command line executable to run pyHiCTools """
+
+import pyHiCTools
+import sys
+
+if __name__ == '__main__':
+    sys.exit(pyHiCTools.main.main())
+

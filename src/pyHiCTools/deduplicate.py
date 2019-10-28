@@ -8,32 +8,25 @@ import os, sys, time, logging, tempfile
 from subprocess import Popen, PIPE
 from contextlib import ExitStack
 
-def description():
-    
-    ''' Returns top-level docstring. Useful for providing
-        descriptions to sub-parsers after importing.
-        '''
-        
-    return __doc__
 
 def deduplicate(infile, output, threads, samtools, sam_out):
 
-    
-    log = pyCommonTools.logging.create_logger()
-    
+
+    log = pct.create_logger()
+
     out_format = 'SAM' if sam_out else 'BAM'
     stdin = sys.stdin if infile == '-' else None
-    cmd1 = [f'{samtools}', 'sort', '-O', 'SAM', '-m', '1G', 
+    cmd1 = [f'{samtools}', 'sort', '-O', 'SAM', '-m', '1G',
         '-@', f'{threads}']
     cmd2 = [f'{samtools}', 'markdup', '-sr', '-O', 'SAM',
         '-@', f'{threads}', '-', '-']
-    cmd3 = [f'{samtools}', 'sort', '-l', '0', '-n', '-m', '1G', 
+    cmd3 = [f'{samtools}', 'sort', '-l', '0', '-n', '-m', '1G',
         '-@', f'{threads}']
     cmd4 = [f'{samtools}', 'fixmate', '-p', '-O', 'SAM',
         '-@', f'{threads}', '-', '-']
-    cmd5 = [f'{samtools}', 'view', '-O', f'{out_format}', '-f', '1', 
+    cmd5 = [f'{samtools}', 'view', '-O', f'{out_format}', '-f', '1',
         '-@', f'{threads}', '-o', f'{output}' ]
-        
+
     with ExitStack() as stack:
         try:
             tmp = stack.enter_context(tempfile.TemporaryFile())
@@ -55,7 +48,7 @@ def deduplicate(infile, output, threads, samtools, sam_out):
             log.debug(f'Exit_codes for p1, p2, p3, p4, p5: {exit_codes}.')
             if not all(ec is 0 for ec in exit_codes):
                 log.error('A sub-process returned a non-zero exit code.')
-    
+
         # Ensure tmp file is always written to log.
         finally:
             tmp.seek(0)

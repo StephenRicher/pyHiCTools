@@ -1,22 +1,14 @@
 #!/usr/bin/env python3
 
 
-''' Truncate proximity ligated restriction digest fragments at the 
+''' Truncate proximity ligated restriction digest fragments at the
     ligation junction.
 '''
 
 import os, argparse, sys, logging, gzip, contextlib, binascii, re, select, time
 
-import pyCommonTools.logging
-import pyCommonTools.open
+import pyCommonTools as pct
 
-def description():
-    
-    ''' Returns top-level docstring. Useful for providing
-        descriptions to sub-parsers after importing.
-        '''
-        
-    return __doc__
 
 def process_restriction(restriction):
     assert(isinstance(restriction, str))
@@ -30,10 +22,10 @@ def process_restriction(restriction):
     return ligation_seq, restriction_seq
 
 def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
-    
+
     ''' Run main loop. '''
 
-    log = pyCommonTools.logging.create_logger()
+    log = pct.create_logger()
 
     ligation_seq, restriction_seq = process_restriction(restriction)
     total = 0
@@ -43,9 +35,9 @@ def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
     if not sample:
         sample = infile
 
-    with pyCommonTools.open.smart_open(output, 'wt', write_gzip) as out_obj, \
-            pyCommonTools.open.smart_open(infile, 'rt', read_gzip) as in_obj:
-            
+    with pct.open_gzip(output, 'wt', write_gzip) as out_obj, \
+            pct.open_gzip(infile, 'rt', read_gzip) as in_obj:
+
         is_truncated = False
         for index, line in enumerate(in_obj):
             line=line.rstrip('\n')

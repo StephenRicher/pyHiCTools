@@ -1,45 +1,34 @@
 #!/usr/bin/env python3
 
 """ Filter HiC read pairs to remove potential sources of contamination.
-    Input should be in SAM/BAM format and have been processed by 
+    Input should be in SAM/BAM format and have been processed by
     hictools process.
     """
 
 import sys, argparse, logging
 
-import pyCommonTools.logging
-import pyCommonTools.open
-import pyCommonTools.sam_opener
-import pyCommonTools.sam_class
+import pyCommonTools as pct
+import pyHiCTools as hic
 
-from hic_filter_functions import *
-
-def description():
-    
-    ''' Returns top-level docstring. Useful for providing
-        descriptions to sub-parsers after importing.
-        '''
-        
-    return __doc__
 
 def filter(
     infile, output, sample, samtools, sam_out, min_inward, min_outward, min_ditag, max_ditag):
 
     ''' Iterate through each infile. '''
-    
-    log = pyCommonTools.logging.create_logger()
+
+    log = pct.create_logger()
 
     if min_inward == min_outward == max_ditag == min_ditag == None:
         log.error('No filter settings defined.')
         sys.exit(1)
-    
+
     if not sample:
         sample = infile
-    
+
     mode = 'wt' if sam_out else 'wb'
 
-    with pyCommonTools.sam_opener.sam_open(output, mode, samtools = samtools) as out_obj, \
-            pyCommonTools.sam_opener.sam_open(infile, samtools = samtools) as in_obj:
+    with pct.open_sam(output, mode, samtools = samtools) as out_obj, \
+            pct.open_sam(infile, samtools = samtools) as in_obj:
         log.info(f'Writing output to {output}.')
         total = 0
         retained = 0
@@ -49,14 +38,14 @@ def filter(
         same_fragment = 0
         below_min_inward = 0
         below_min_outward = 0
-         
+
         for line in in_obj:
             if line.startswith("@"):
                 out_obj.write(line)
             else:
                 try:
-                    read1 = pyCommonTools.sam_class.sam(line.split())
-                    read2 = pyCommonTools.sam_class.sam(next(in_obj).split())
+                    read1 = pct.Sam(line.split())
+                    read2 = pct.Sam(next(in_obj).split())
                     total += 1
                 except StopIteration:
                     log.exception('Odd number of alignments in file.')
@@ -90,7 +79,7 @@ def filter(
                 retained += 1
                 out_obj.write(read1.print_sam())
                 out_obj.write(read2.print_sam())
-                
+
         sys.stderr.write(
             f'{sample}\tTotal\t{total}\n'
             f'{sample}\tRetained\t{retained}\n'
@@ -101,3 +90,5 @@ def filter(
             f'{sample}\tSame fragment\t{same_fragment}\n'
             f'{sample}\tInward insert < {min_inward}bp\t{below_min_inward}\n'
             f'{sample}\tOutward insert < {min_outward}bp\t{below_min_outward}\n')
+
+

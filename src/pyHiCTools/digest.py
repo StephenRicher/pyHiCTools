@@ -2,30 +2,21 @@
 
 
 ''' Generate an in-silico restriction enzyme digest of a FASTA
-    reference sequence. 
+    reference sequence.
 '''
 
 import argparse, sys, logging, re, select
 
-import pyCommonTools.logging
-import pyCommonTools.open
-
-def description():
-    
-    ''' Returns top-level docstring. Useful for providing
-        descriptions to sub-parsers after importing.
-        '''
-        
-    return __doc__
+import pyCommonTools as pct
 
 def digest(infile, output, read_gzip, write_gzip, restriction):
-    
-    ''' Iterate through each infile. '''
-    
-    log = pyCommonTools.logging.create_logger()
 
-    with pyCommonTools.open.smart_open(output, 'wt', write_gzip) as out_obj, \
-            pyCommonTools.open.smart_open(infile, 'rt', read_gzip) as in_obj:
+    ''' Iterate through each infile. '''
+
+    log = pct.create_logger()
+
+    with pct.open_gzip(output, 'wt', write_gzip) as out_obj, \
+            pct.open_gzip(infile, 'rt', read_gzip) as in_obj:
         log.info(f'Writing output to {output}.')
         header = 1
         for index, line in enumerate(in_obj):
@@ -49,8 +40,8 @@ def digest(infile, output, read_gzip, write_gzip, restriction):
         find_cut_sites(''.join(seqs), ref, restriction, out_obj)
 
 def find_cut_sites(ref_seq, ref, restriction, out_obj):
-    
-    log = pyCommonTools.logging.create_logger()
+
+    log = pct.create_logger()
 
     if not ref_seq:
         log.error(f'Reference {ref} contains no sequence.')
@@ -68,16 +59,16 @@ def find_cut_sites(ref_seq, ref, restriction, out_obj):
             index += 1
             start = 1 if index == 1 else previous_end + 1
             end = match.start() + overhang
-            out_obj.write(f'{ref}\t{start}\t{end}\t{index}\n')    
+            out_obj.write(f'{ref}\t{start}\t{end}\t{index}\n')
             previous_end = end
         out_obj.write(
             f'{ref}\t{previous_end + 1}\t{len(ref_seq)}\t{index + 1}\n')
         ec = 0
     return ec
-    
+
 def check_valid_seq(seq):
-    
-    log = pyCommonTools.logging.create_logger()
-    
+
+    log = pct.create_logger()
+
     return re.search('[^ATCGURYKMSWBDHVN-]', seq.strip('\n'), re.IGNORECASE)
-        
+
