@@ -6,7 +6,7 @@
 # Note: To use the 'upload' functionality of this file, you must:
 #   $ pipenv install twine --dev
 
-from setuptools import setup, find_namespace_packages, Command
+from setuptools import setup, find_packages, Command
 from shutil import rmtree
 import sys
 import os
@@ -83,7 +83,7 @@ setup(
     description = __doc__,
     long_description = read('README.md'),
     long_description_content_type = 'text/markdown',
-    packages = find_namespace_packages(where = 'src'),
+    packages = find_packages(where = 'src'),
     package_dir={'': 'src'},
     zip_safe = False,
 )
