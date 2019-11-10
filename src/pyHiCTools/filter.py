@@ -16,8 +16,8 @@ def filter(infile, output, sample, samtools, sam_out,
     ''' Iterate through each infile. '''
 
     log = pct.create_logger()
-
-    if (min_inward and min_outward and max_ditag and min_ditag) is None:
+    inputs = [min_inward, min_outward, max_ditag, min_ditag]
+    if all(i is None for i in inputs):
         log.error('No filter settings defined.')
         sys.exit(1)
 
@@ -49,7 +49,7 @@ def filter(infile, output, sample, samtools, sam_out,
                 except StopIteration:
                     log.exception('Odd number of alignments in file.')
                     sys.exit(1)
-                if not is_valid(read1, read2):
+                if not hic.valid_pair.is_valid(read1, read2):
                     log.error(f'Invalid format in {read1.qname}.')
                     invalid += 1
                     continue
