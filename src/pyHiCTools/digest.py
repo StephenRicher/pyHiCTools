@@ -32,11 +32,6 @@ def digest(infile, output, read_gzip, write_gzip, restriction):
                 log.error(f'FASTA line 1 does not begin with ">".')
                 sys.exit(1)
             else:
-                invalid = check_valid_seq(line)
-                if invalid:
-                    log.error(f'Invalid FASTA character {invalid.group(0)} '
-                              'on line {index}.')
-                    sys.exit(1)
                 seqs.append(line.upper().strip('\n'))
         find_cut_sites(''.join(seqs), ref, restriction, out_obj)
 
@@ -47,6 +42,9 @@ def find_cut_sites(ref_seq, ref, restriction, out_obj):
 
     if not ref_seq:
         log.error(f'Reference {ref} contains no sequence.')
+        ec = 1
+    elif invalid_seq(ref_seq):
+        log.error(f'Invalid FASTA character in {ref}.')
         ec = 1
     else:
         overhang = restriction.index('^')
@@ -69,7 +67,7 @@ def find_cut_sites(ref_seq, ref, restriction, out_obj):
     return ec
 
 
-def check_valid_seq(seq):
+def invalid_seq(seq):
 
     log = pct.create_logger()
 

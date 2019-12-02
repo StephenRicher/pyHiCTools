@@ -33,7 +33,7 @@ def extract(infile, output, samtools, sample, write_gzip):
                 except StopIteration:
                     log.exception('Odd number of alignments in file')
                     sys.exit(1)
-                if not is_valid(read1, read2):
+                if not hic.valid_pair.is_valid(read1, read2):
                     log.error(f'Invalid format in {read1.qname}.')
                 out_obj.write(
                     f'{sample}\t{read1.optional["or:Z"]}\t'

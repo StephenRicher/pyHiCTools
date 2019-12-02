@@ -18,7 +18,7 @@ def deduplicate(infile, output, threads, samtools, sam_out):
     out_format = 'SAM' if sam_out else 'BAM'
     stdin = sys.stdin if infile == '-' else None
     cmd1 = [f'{samtools}', 'sort', '-O', 'SAM', '-m', '1G',
-            '-@', f'{threads}']
+            '-@', f'{threads}', infile]
     cmd2 = [f'{samtools}', 'markdup', '-sr', '-O', 'SAM',
             '-@', f'{threads}', '-', '-']
     cmd3 = [f'{samtools}', 'sort', '-l', '0', '-n', '-m', '1G',
@@ -48,6 +48,7 @@ def deduplicate(infile, output, threads, samtools, sam_out):
             exit_codes = [p.wait() for p in [p1, p2, p3, p4, p5]]
             log.debug(f'Exit_codes for p1, p2, p3, p4, p5: {exit_codes}.')
             if not all(ec is 0 for ec in exit_codes):
+                log.error(exit_codes)
                 log.error('A sub-process returned a non-zero exit code.')
 
         # Ensure tmp file is always written to log.
