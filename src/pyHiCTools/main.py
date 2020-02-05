@@ -74,6 +74,13 @@ def main():
         'infile', nargs='?', default='-',
         help='Input file in SAM/BAM format.')
 
+    qc_parser = argparse.ArgumentParser(
+        formatter_class=formatter_class,
+        add_help=False)
+    qc_parser.add_argument(
+        '--qc', nargs='?',
+        help='Output file for QC statistics.')
+
     # Parent parser options for SAM output.
     sam_output_parser = argparse.ArgumentParser(
         formatter_class=formatter_class,
@@ -230,12 +237,9 @@ def main():
         'filter',
         description=hic.filter.__doc__,
         help='Filter SAM/BAM file processed with pyHiCTools process.',
-        parents=[base_parser, sam_parser, sam_input_parser, sam_output_parser],
+        parents=[base_parser, qc_parser, sam_input_parser2],
         formatter_class=formatter_class,
         epilog=epilog)
-    filter_parser.add_argument(
-        '-o', '--output', nargs='?', default='-',
-        help='Filtered SAM/BAM alignment file.')
     filter_parser.add_argument(
         '--min_inward', default=None,
         type=pct.positive_int,
