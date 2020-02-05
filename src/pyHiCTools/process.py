@@ -51,6 +51,7 @@ def run_filter(read1, read2, digest):
 
     if not hic.valid_pair.is_valid(read1, read2):
         log.error(f'Invalid format in {read1.qname}.')
+
     filter_stats = {}
     read1, read2 = reorder_read_pair(read1, read2)
     filter_stats['orientation'] = get_orientation(read1, read2)
