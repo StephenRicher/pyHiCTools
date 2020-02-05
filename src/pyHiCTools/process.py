@@ -3,26 +3,23 @@
 """ Process named-sorted SAM/BAM alignment files to identify fragment
     mapping, insert size, ditag size and relative orientation of pairs.
 """
-
+import sys
 import bisect
 import math
 import pyCommonTools as pct
 import pyHiCTools as hic
+import fileinput
 
-
-def process(infile, output, read_gzip, samtools, sam_out, digest):
+def process(infile, read_gzip, digest):
 
     log = pct.create_logger()
 
-    mode = 'wt' if sam_out else 'wb'
-
-    with pct.open_sam(output, mode, samtools=samtools) as out_obj, \
-            pct.open_sam(infile, samtools=samtools) as in_obj, \
+    with fileinput.input(files = infile) as in_obj, \
             pct.open_gzip(digest, 'rt', read_gzip) as digest:
         d = process_digest(digest)
         for line in in_obj:
             if line.startswith("@"):
-                out_obj.write(line)
+                sys.stdout.write(line)
                 continue
             else:
                 try:
@@ -43,14 +40,11 @@ def process(infile, output, read_gzip, samtools, sam_out, digest):
                 read2.optional['fs:i'] = filter_stats['fragment_seperation']
                 read1.optional['fn:i'] = filter_stats['read1_fragment']
                 read2.optional['fn:i'] = filter_stats['read2_fragment']
-                out_obj.write(read1.get_record())
-                out_obj.write(read2.get_record())
+                sys.stdout.write(read1.get_record())
+                sys.stdout.write(read2.get_record())
 
 
 def run_filter(read1, read2, digest):
-
-    if not hic.valid_pair.is_valid(read1, read2):
-        log.error(f'Invalid format in {read1.qname}.')
 
     filter_stats = {}
     read1, read2 = reorder_read_pair(read1, read2)

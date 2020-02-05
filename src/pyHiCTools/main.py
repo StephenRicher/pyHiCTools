@@ -6,9 +6,9 @@
 import re
 import time
 import argparse
+import fileinput
 import pyCommonTools as pct
 import pyHiCTools as hic
-
 
 def main():
 
@@ -58,6 +58,13 @@ def main():
     sam_parser.add_argument(
         '--samtools', default='samtools',
         help='Set path to samtools installation.')
+
+    sam_input_parser2 = argparse.ArgumentParser(
+        formatter_class=formatter_class,
+        add_help=False)
+    sam_input_parser2.add_argument(
+        'infile', nargs='?', default=[],
+        help='Input file in SAM format.')
 
     # Parent parser options for SAM input.
     sam_input_parser = argparse.ArgumentParser(
@@ -187,12 +194,9 @@ def main():
         'process',
         description=hic.process.__doc__,
         help='Determine HiC fragment mappings from named-sorted SAM/BAM file.',
-        parents=[base_parser, sam_parser, sam_input_parser, sam_output_parser],
+        parents=[base_parser, sam_input_parser2],
         formatter_class=formatter_class,
         epilog=epilog)
-    process_parser.add_argument(
-        '-o', '--output', nargs='?', default='-',
-        help='Processed SAM/BAM file.')
     process_parser.add_argument(
         '-u', '--gunzip',
         action='store_true', dest='read_gzip',
