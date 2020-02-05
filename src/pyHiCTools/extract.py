@@ -6,36 +6,43 @@
 """
 
 import sys
-import pyCommonTools as pct
+import fileinput
 import pyHiCTools as hic
+import pyCommonTools as pct
+from contextlib import ExitStack
 
-
-def extract(infile, output, samtools, sample, write_gzip):
+def extract(infile, out, sample):
 
     log = pct.create_logger()
 
     if not sample:
-        sample = infile
+        if infile == []:
+            sample = 'stdin'
+        else:
+            sample = infile
 
-    with pct.open_sam(infile, samtools=samtools) as in_obj, \
-            pct.open_gzip(output, 'wt', write_gzip) as out_obj:
-        log.info(f'Writing output to {output}.')
-        out_obj.write(
+    with ExitStack() as stack:
+        input = stack.enter_context(
+            fileinput.input(files=infile))
+        output = stack.enter_context(
+            pct.open_smart(out, mode='w'))
+        log.info(f'Writing output to {out}.')
+
+        output.write(
             'sample\torientation\tinteraction_type\tditag_length\t'
             'insert_size\tfragment_seperation\n')
-        for i, line in enumerate(in_obj):
+
+        for i, line in enumerate(input):
             if line.startswith('@'):
                 continue
             else:
                 try:
                     read1 = pct.Sam(line)
-                    read2 = pct.Sam(next(in_obj))
+                    read2 = pct.Sam(next(input))
                 except StopIteration:
                     log.exception('Odd number of alignments in file')
                     sys.exit(1)
-                if not hic.valid_pair.is_valid(read1, read2):
-                    log.error(f'Invalid format in {read1.qname}.')
-                out_obj.write(
+                output.write(
                     f'{sample}\t{read1.optional["or:Z"]}\t'
                     f'{read1.optional["it:Z"]}\t{read1.optional["dt:i"]}\t'
                     f'{read1.optional["is:i"]}\t{read1.optional["fs:i"]}\n')

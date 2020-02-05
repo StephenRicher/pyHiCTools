@@ -24,6 +24,13 @@ def main():
 
     subparsers, base_parser = pct.set_subparser(parser)
 
+    output = argparse.ArgumentParser(
+        formatter_class=formatter_class,
+        add_help=False)
+    output.add_argument(
+        '--out', nargs='?',
+        help='Output file.')
+
     # Parent parser options for commands with multi-threading.
     parallel_parser = argparse.ArgumentParser(
         formatter_class=formatter_class,
@@ -221,12 +228,9 @@ def main():
         'extract',
         description=hic.extract.__doc__,
         help='Extract HiC information encoded by hic process from SAM/BAM.',
-        parents=[base_parser, gzip_parser, sam_parser, sam_input_parser],
+        parents=[base_parser, sam_input_parser2, output],
         formatter_class=formatter_class,
         epilog=epilog)
-    extract_parser.add_argument(
-        '-o', '--output', nargs='?', default='-',
-        help='HiC read pair information in long data format.')
     extract_parser.add_argument(
         '-n', '--sample', default=None,
         help='Sample name for input.')
