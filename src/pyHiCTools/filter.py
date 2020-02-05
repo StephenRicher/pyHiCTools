@@ -6,12 +6,12 @@
     """
 
 import sys
+import fileinput
 import pyCommonTools as pct
 import pyHiCTools as hic
 
 
-def filter(infile, output, sample, samtools, sam_out,
-           min_inward, min_outward, min_ditag, max_ditag):
+def filter(infile, qc, sample, min_inward, min_outward, min_ditag, max_ditag):
 
     ''' Iterate through each infile. '''
 
@@ -22,13 +22,12 @@ def filter(infile, output, sample, samtools, sam_out,
         sys.exit(1)
 
     if not sample:
-        sample = infile
+        if infile == []:
+            sample = 'stdin'
+        else:
+            sample = infile
 
-    mode = 'wt' if sam_out else 'wb'
-
-    with pct.open_sam(output, mode, samtools=samtools) as out_obj, \
-            pct.open_sam(infile, samtools=samtools) as in_obj:
-        log.info(f'Writing output to {output}.')
+    with fileinput.input(files = infile) as in_obj:
         total = 0
         retained = 0
         invalid = 0
@@ -40,7 +39,7 @@ def filter(infile, output, sample, samtools, sam_out,
 
         for line in in_obj:
             if line.startswith("@"):
-                out_obj.write(line)
+                sys.stdout.write(line)
             else:
                 try:
                     read1 = pct.Sam(line)
@@ -49,10 +48,6 @@ def filter(infile, output, sample, samtools, sam_out,
                 except StopIteration:
                     log.exception('Odd number of alignments in file.')
                     sys.exit(1)
-                if not hic.valid_pair.is_valid(read1, read2):
-                    log.error(f'Invalid format in {read1.qname}.')
-                    invalid += 1
-                    continue
                 if max_ditag is not None:
                     if read1.optional['dt:i'] > max_ditag:
                         above_ditag += 1
@@ -76,16 +71,17 @@ def filter(infile, output, sample, samtools, sam_out,
                                 below_min_outward += 1
                                 continue
                 retained += 1
-                out_obj.write(read1.get_record())
-                out_obj.write(read2.get_record())
+                sys.stdout.write(read1.get_record())
+                sys.stdout.write(read2.get_record())
 
-        sys.stderr.write(
-            f'{sample}\tTotal\t{total}\n'
-            f'{sample}\tRetained\t{retained}\n'
-            f'{sample}\tFiltered\t{total - retained}\n'
-            f'{sample}\tInvalid\t{invalid}\n'
-            f'{sample}\tDitag < {min_ditag}bp\t{above_ditag}\n'
-            f'{sample}\tDitag > {max_ditag}bp\t{below_ditag}\n'
-            f'{sample}\tSame fragment\t{same_fragment}\n'
-            f'{sample}\tInward insert < {min_inward}bp\t{below_min_inward}\n'
-            f'{sample}\tOutward insert < {min_outward}bp\t{below_min_outward}\n')
+        with pct.open_smart(qc, stderr = True, mode = 'w') as qc_out:
+            qc_out.write(
+                f'{sample}\tTotal\t{total}\n'
+                f'{sample}\tRetained\t{retained}\n'
+                f'{sample}\tFiltered\t{total - retained}\n'
+                f'{sample}\tInvalid\t{invalid}\n'
+                f'{sample}\tDitag < {min_ditag}bp\t{above_ditag}\n'
+                f'{sample}\tDitag > {max_ditag}bp\t{below_ditag}\n'
+                f'{sample}\tSame fragment\t{same_fragment}\n'
+                f'{sample}\tInward insert < {min_inward}bp\t{below_min_inward}\n'
+                f'{sample}\tOutward insert < {min_outward}bp\t{below_min_outward}\n')
