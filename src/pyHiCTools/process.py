@@ -6,9 +6,10 @@
 import sys
 import bisect
 import math
+import fileinput
 import pyCommonTools as pct
 import pyHiCTools as hic
-import fileinput
+
 
 def process(infile, read_gzip, digest):
 
