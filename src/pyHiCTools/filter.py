@@ -22,12 +22,12 @@ def filter(infile, qc, sample, min_inward, min_outward, min_ditag, max_ditag):
         sys.exit(1)
 
     if not sample:
-        if infile == []:
+        if infile == '-':
             sample = 'stdin'
         else:
             sample = infile
 
-    with fileinput.input(files = infile) as in_obj:
+    with pct.open(infile) as in_obj:
         total = 0
         retained = 0
         invalid = 0
@@ -74,7 +74,7 @@ def filter(infile, qc, sample, min_inward, min_outward, min_ditag, max_ditag):
                 sys.stdout.write(read1.get_record())
                 sys.stdout.write(read2.get_record())
 
-        with pct.open_smart(qc, stderr = True, mode = 'w') as qc_out:
+        with pct.open(qc, stderr = True, mode = 'w') as qc_out:
             qc_out.write(
                 f'{sample}\tTotal\t{total}\n'
                 f'{sample}\tRetained\t{retained}\n'

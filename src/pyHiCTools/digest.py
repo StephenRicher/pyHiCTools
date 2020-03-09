@@ -10,20 +10,19 @@ import sys
 import pyCommonTools as pct
 
 
-def digest(infile, output, read_gzip, write_gzip, restriction):
+def digest(infile, restriction):
 
     ''' Iterate through each infile. '''
 
     log = pct.create_logger()
 
-    with pct.open_gzip(output, 'wt', write_gzip) as out_obj, \
-            pct.open_gzip(infile, 'rt', read_gzip) as in_obj:
-        log.info(f'Writing output to {output}.')
+    with pct.open(infile) as in_obj:
+
         header = 1
         for index, line in enumerate(in_obj):
             if line.startswith('>'):
                 if header > 1:
-                    find_cut_sites(''.join(seqs), ref, restriction, out_obj)
+                    find_cut_sites(''.join(seqs), ref, restriction)
                 ref = line.rsplit()[0][1:]
                 log.info(f'Digesting reference {ref}.')
                 header += 1
@@ -33,10 +32,10 @@ def digest(infile, output, read_gzip, write_gzip, restriction):
                 sys.exit(1)
             else:
                 seqs.append(line.upper().strip('\n'))
-        find_cut_sites(''.join(seqs), ref, restriction, out_obj)
+        find_cut_sites(''.join(seqs), ref, restriction)
 
 
-def find_cut_sites(ref_seq, ref, restriction, out_obj):
+def find_cut_sites(ref_seq, ref, restriction):
 
     log = pct.create_logger()
 
@@ -59,16 +58,14 @@ def find_cut_sites(ref_seq, ref, restriction, out_obj):
             index += 1
             start = 1 if index == 1 else previous_end + 1
             end = match.start() + overhang
-            out_obj.write(f'{ref}\t{start}\t{end}\t{index}\n')
+            sys.stdout.write(f'{ref}\t{start}\t{end}\t{index}\n')
             previous_end = end
-        out_obj.write(
+        sys.stdout.write(
             f'{ref}\t{previous_end + 1}\t{len(ref_seq)}\t{index + 1}\n')
         ec = 0
     return ec
 
 
 def invalid_seq(seq):
-
-    log = pct.create_logger()
 
     return re.search('[^ATCGURYKMSWBDHVN-]', seq.strip('\n'), re.IGNORECASE)

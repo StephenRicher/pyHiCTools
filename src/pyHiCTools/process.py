@@ -11,12 +11,12 @@ import pyCommonTools as pct
 import pyHiCTools as hic
 
 
-def process(infile, read_gzip, digest):
+def process(infile, digest):
 
     log = pct.create_logger()
 
-    with fileinput.input(files = infile) as in_obj, \
-            pct.open_gzip(digest, 'rt', read_gzip) as digest:
+    with pct.open(infile) as in_obj, pct.open(digest) as digest:
+
         d = process_digest(digest)
         for line in in_obj:
             if line.startswith("@"):

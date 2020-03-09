@@ -21,7 +21,7 @@ def process_restriction(restriction):
     return ligation_seq, restriction_seq
 
 
-def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
+def truncate(infile, qc, sample, restriction):
 
     ''' Run main loop. '''
 
@@ -35,8 +35,7 @@ def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
     if not sample:
         sample = infile
 
-    with pct.open_gzip(output, 'wt', write_gzip) as out_obj, \
-            pct.open_gzip(infile, 'rt', read_gzip) as in_obj:
+    with pct.open(infile) as in_obj:
 
         is_truncated = False
         for index, line in enumerate(in_obj):
@@ -56,13 +55,15 @@ def truncate(infile, output, read_gzip, write_gzip, sample, restriction):
                     truncated += 1
                     truncated_length += seq_length
                     is_truncated = False
-            out_obj.write(f'{line}\n')
+            sys.stdout.write(f'{line}\n')
         try:
             mean_truncated_length = truncated_length/truncated
         except ZeroDivisionError:
             mean_truncated_length = 'na'
-        sys.stderr.write(
-            f'{sample}\tTotal\t{total}\n'
-            f'{sample}\tTruncated\t{truncated}\n'
-            f'{sample}\tNot truncated\t{total-truncated}\n'
-            f'{sample}\tMean truncated length\t{mean_truncated_length}\n')
+
+        with pct.open(qc, stderr = True, mode = 'w') as qc_out:
+            qc_out.write(
+                f'{sample}\tTotal\t{total}\n'
+                f'{sample}\tTruncated\t{truncated}\n'
+                f'{sample}\tNot truncated\t{total-truncated}\n'
+                f'{sample}\tMean truncated length\t{mean_truncated_length}\n')
